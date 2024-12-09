@@ -1,0 +1,19 @@
+New Feedback Received
+
+A new feedback has been submitted by {{ feedback.user.get_full_name }}.
+
+Feedback Details:
+- Subject: {{ feedback.subject }}
+- Type: {{ feedback.get_feedback_type_display }}
+- Status: {{ feedback.get_status_display }}
+{% if feedback.event %}- Related Event: {{ feedback.event.title }}{% endif %}
+{% if feedback.dj %}- Related DJ: {{ feedback.dj.artist_name }}{% endif %}
+
+Message:
+{{ feedback.message }}
+
+View in Admin:
+{{ admin_url }}
+
+---
+This is an automated message from House of Young Event Platform. Please do not reply to this email.

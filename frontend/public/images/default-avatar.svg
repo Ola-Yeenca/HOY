@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200px" height="200px" viewBox="0 0 200 200" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <circle fill="#2A2A2A" cx="100" cy="100" r="100"></circle>
+        <g transform="translate(50.000000, 50.000000)" fill="#B8860B">
+            <circle cx="50" cy="30" r="30"></circle>
+            <path d="M100,100 C100,77.90861 77.90861,60 50,60 C22.09139,60 0,77.90861 0,100 L100,100 Z"></path>
+        </g>
+    </g>
+</svg>

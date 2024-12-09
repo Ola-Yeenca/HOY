@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Email - HOY</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            color: #000000;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #FFD700;
+            color: #000000;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            color: #666666;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">HOY</div>
+        </div>
+        <div class="content">
+            <h2>Welcome to HOY!</h2>
+            <p>Hi {{ user.first_name }},</p>
+            <p>Thank you for registering with HOY. To complete your registration and verify your email address, please click the button below:</p>
+            <p style="text-align: center;">
+                <a href="{{ verification_link }}" class="button">Verify Email Address</a>
+            </p>
+            <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
+            <p style="word-break: break-all;">{{ verification_link }}</p>
+            <p>This verification link will expire in 24 hours.</p>
+        </div>
+        <div class="footer">
+            <p>This email was sent by HOY. If you didn't register for an account, please ignore this email.</p>
+            <p>&copy; {% now "Y" %} HOY. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

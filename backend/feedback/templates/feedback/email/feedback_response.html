@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .message-box {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .response-box {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Response to Your Feedback</h2>
+        </div>
+        <div class="content">
+            <p>Dear {{ user.get_full_name }},</p>
+            
+            <p>We have received a response to your feedback regarding "{{ feedback.subject }}".</p>
+            
+            <div class="message-box">
+                <h3>Your Original Feedback:</h3>
+                <p>{{ feedback.message }}</p>
+            </div>
+            
+            <div class="response-box">
+                <h3>Our Response:</h3>
+                <p>{{ response.message }}</p>
+                <p><em>Responded by: {{ response.responder.get_full_name }}</em></p>
+            </div>
+            
+            <p>Current Status: {{ feedback.get_status_display }}</p>
+            
+            <p>Thank you for helping us improve our services. If you have any additional feedback or questions, please don't hesitate to reach out.</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated message from House of Young Event Platform. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

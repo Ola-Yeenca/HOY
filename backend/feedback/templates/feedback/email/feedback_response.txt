@@ -1,0 +1,20 @@
+Response to Your Feedback
+
+Dear {{ user.get_full_name }},
+
+We have received a response to your feedback regarding "{{ feedback.subject }}".
+
+Your Original Feedback:
+{{ feedback.message }}
+
+Our Response:
+{{ response.message }}
+
+Responded by: {{ response.responder.get_full_name }}
+
+Current Status: {{ feedback.get_status_display }}
+
+Thank you for helping us improve our services. If you have any additional feedback or questions, please don't hesitate to reach out.
+
+---
+This is an automated message from House of Young Event Platform. Please do not reply to this email.

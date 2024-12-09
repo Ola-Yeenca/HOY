@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .content {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>New Feedback Received</h2>
+        </div>
+        <div class="content">
+            <p>A new feedback has been submitted by {{ feedback.user.get_full_name }}.</p>
+            
+            <h3>Feedback Details:</h3>
+            <ul>
+                <li><strong>Subject:</strong> {{ feedback.subject }}</li>
+                <li><strong>Type:</strong> {{ feedback.get_feedback_type_display }}</li>
+                <li><strong>Status:</strong> {{ feedback.get_status_display }}</li>
+                {% if feedback.event %}
+                <li><strong>Related Event:</strong> {{ feedback.event.title }}</li>
+                {% endif %}
+                {% if feedback.dj %}
+                <li><strong>Related DJ:</strong> {{ feedback.dj.artist_name }}</li>
+                {% endif %}
+            </ul>
+            
+            <h3>Message:</h3>
+            <p>{{ feedback.message }}</p>
+            
+            <a href="{{ admin_url }}" class="button">View in Admin</a>
+        </div>
+        <div class="footer">
+            <p>This is an automated message from House of Young Event Platform. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
