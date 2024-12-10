@@ -9,7 +9,7 @@ import { Event } from '@/types/events';
 
 interface Props {
   eventId: string;
-  initialEvent: Event | null;
+  initialEvent: Event;
 }
 
 export default function EventClientPage({ eventId, initialEvent }: Props) {
@@ -17,13 +17,11 @@ export default function EventClientPage({ eventId, initialEvent }: Props) {
   const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Redirect to login if not authenticated
     if (!isAuthenticated && !isLoading) {
       router.replace('/login?from=' + window.location.pathname);
     }
   }, [isAuthenticated, isLoading, router]);
 
-  // Show loader while checking auth
   if (isLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -32,17 +30,8 @@ export default function EventClientPage({ eventId, initialEvent }: Props) {
     );
   }
 
-  // Don't render anything if not authenticated
   if (!isAuthenticated) {
     return null;
-  }
-
-  if (!eventId || !initialEvent) {
-    return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="text-xl text-white-plum">Event not found</div>
-      </div>
-    );
   }
 
   return <EventDetail id={eventId} initialEvent={initialEvent} />;

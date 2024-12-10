@@ -1,29 +1,24 @@
 export interface Event {
-  id: string | number;
+  id: string;
   title: string;
   description: string;
   date: string;
   location: string;
-  dj?: string;
-  tag?: string;
-  image?: string;
+  image: string;
+  coverImage?: string;
   featured_image?: string;
   video?: string;
-  likes?: number;
-  comments?: number;
+  dj?: string;
+  tag?: string;
   price: string;
-  featured?: boolean;
+  is_featured?: boolean;
   capacity?: number;
   age_restriction?: number;
+  likes?: number;
+  comments?: number;
   ticket_types?: Array<{
     name: string;
     price: number;
   }>;
-  djs?: Array<{
-    name: string;
-    artist_name: string;
-    profile_image: string;
-  }>;
-  is_featured?: boolean;
   category?: string;
 }

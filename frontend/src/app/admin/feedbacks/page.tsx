@@ -30,10 +30,25 @@ import {
 } from '@chakra-ui/react';
 import { feedbackAdminApi } from '@/services/adminApi';
 
+interface Feedback {
+  id: string;
+  user_email: string;
+  content: string;
+  status: string;
+  created_at: string;
+}
+
+interface Survey {
+  id: string;
+  title: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export default function FeedbackAdminPage() {
-  const [feedbacks, setFeedbacks] = useState([]);
-  const [surveys, setSurveys] = useState([]);
-  const [selectedFeedback, setSelectedFeedback] = useState(null);
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [surveys, setSurveys] = useState<Survey[]>([]);
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
   const [response, setResponse] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -89,6 +104,14 @@ export default function FeedbackAdminPage() {
 
   const handleResponse = async () => {
     try {
+      if (!selectedFeedback) {
+        toast({
+          title: 'No feedback selected',
+          status: 'error',
+          duration: 3000,
+        });
+        return;
+      }
       await feedbackAdminApi.respondToFeedback(selectedFeedback.id, response);
       loadFeedbacks();
       onClose();

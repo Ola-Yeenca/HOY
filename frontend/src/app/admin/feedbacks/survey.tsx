@@ -12,15 +12,27 @@ import {
   Heading,
   Switch,
   Textarea,
+  HStack,
 } from '@chakra-ui/react';
 import { feedbackAdminApi } from '@/services/adminApi';
 
-export default function SurveyForm({ surveyId = null }) {
-  const [formData, setFormData] = useState({
+interface SurveyProps {
+  surveyId?: string;
+}
+
+interface FormData {
+  title: string;
+  description: string;
+  questions: string[];
+  isActive: boolean;
+}
+
+export default function SurveyForm({ surveyId }: SurveyProps) {
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
-    questions: '',
-    is_active: true,
+    questions: [''],
+    isActive: true,
   });
   const toast = useToast();
 
@@ -32,12 +44,13 @@ export default function SurveyForm({ surveyId = null }) {
 
   const loadSurvey = async () => {
     try {
+      if (!surveyId) return;
       const data = await feedbackAdminApi.getSurvey(surveyId);
       setFormData({
         title: data.title,
         description: data.description,
-        questions: JSON.stringify(data.questions, null, 2),
-        is_active: data.is_active,
+        questions: Array.isArray(data.questions) ? data.questions : [data.questions],
+        isActive: data.is_active,
       });
     } catch (error) {
       toast({
@@ -48,55 +61,82 @@ export default function SurveyForm({ surveyId = null }) {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const surveyData = {
+      const payload = {
         ...formData,
-        questions: JSON.parse(formData.questions),
+        questions: formData.questions.filter(q => q.trim() !== ''),
       };
-
+      
       if (surveyId) {
-        await feedbackAdminApi.updateSurvey(surveyId, surveyData);
+        await feedbackAdminApi.updateSurvey(surveyId, payload);
+        toast({
+          title: 'Survey updated successfully',
+          status: 'success',
+          duration: 3000,
+        });
       } else {
-        await feedbackAdminApi.createSurvey(surveyData);
+        await feedbackAdminApi.createSurvey(payload);
+        toast({
+          title: 'Survey created successfully',
+          status: 'success',
+          duration: 3000,
+        });
       }
-
-      toast({
-        title: `Survey ${surveyId ? 'updated' : 'created'} successfully`,
-        status: 'success',
-        duration: 3000,
-      });
     } catch (error) {
       toast({
-        title: `Error ${surveyId ? 'updating' : 'creating'} survey`,
-        description: error.message,
+        title: 'Error saving survey',
         status: 'error',
         duration: 3000,
       });
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: value,
+    }));
+  };
+
+  const handleQuestionChange = (index: number, value: string) => {
+    setFormData(prev => {
+      const newQuestions = [...prev.questions];
+      newQuestions[index] = value;
+      return {
+        ...prev,
+        questions: newQuestions,
+      };
+    });
+  };
+
+  const addQuestion = () => {
+    setFormData(prev => ({
+      ...prev,
+      questions: [...prev.questions, ''],
+    }));
+  };
+
+  const removeQuestion = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      questions: prev.questions.filter((_, i) => i !== index),
     }));
   };
 
   return (
-    <Box p={4}>
-      <Heading mb={6}>{surveyId ? 'Edit Survey' : 'Create Survey'}</Heading>
+    <Box maxW="container.md" mx="auto" py={8}>
       <form onSubmit={handleSubmit}>
-        <VStack spacing={4} align="stretch">
+        <VStack spacing={6} align="stretch">
           <FormControl isRequired>
             <FormLabel>Title</FormLabel>
             <Input
               name="title"
               value={formData.title}
               onChange={handleChange}
-              placeholder="Survey Title"
+              placeholder="Survey title"
             />
           </FormControl>
 
@@ -106,27 +146,43 @@ export default function SurveyForm({ surveyId = null }) {
               name="description"
               value={formData.description}
               onChange={handleChange}
-              placeholder="Survey Description"
+              placeholder="Survey description"
             />
           </FormControl>
 
           <FormControl isRequired>
-            <FormLabel>Questions (JSON format)</FormLabel>
-            <Textarea
-              name="questions"
-              value={formData.questions}
-              onChange={handleChange}
-              placeholder='[{"type": "text", "question": "Your question here"}]'
-              minHeight="200px"
-            />
+            <FormLabel>Questions</FormLabel>
+            <VStack spacing={4} align="stretch">
+              {formData.questions.map((question, index) => (
+                <HStack key={index}>
+                  <Input
+                    value={question}
+                    onChange={(e) => handleQuestionChange(index, e.target.value)}
+                    placeholder={`Question ${index + 1}`}
+                  />
+                  {formData.questions.length > 1 && (
+                    <Button
+                      colorScheme="red"
+                      onClick={() => removeQuestion(index)}
+                      size="sm"
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </HStack>
+              ))}
+              <Button onClick={addQuestion} size="sm">
+                Add Question
+              </Button>
+            </VStack>
           </FormControl>
 
           <FormControl display="flex" alignItems="center">
             <FormLabel mb="0">Active</FormLabel>
             <Switch
-              name="is_active"
-              isChecked={formData.is_active}
-              onChange={handleChange}
+              name="isActive"
+              isChecked={formData.isActive}
+              onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
             />
           </FormControl>
 

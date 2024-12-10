@@ -8,9 +8,10 @@ interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
   className?: string;
+  placeholder?: string;
 }
 
-export function SearchBar({ value, onChange, className = '' }: SearchBarProps) {
+export function SearchBar({ value, onChange, className = '', placeholder = 'Search...' }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
@@ -54,7 +55,7 @@ export function SearchBar({ value, onChange, className = '' }: SearchBarProps) {
               onChange={(e) => onChange(e.target.value)}
               onFocus={() => setIsFocused(true)}
               onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-              placeholder="Search for events, activities, or locations..."
+              placeholder={placeholder}
               className="w-full bg-coffee-bean/30 border border-gold/20 rounded-xl py-4 pl-12 pr-4 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold/50 transition-all"
             />
             {value && (

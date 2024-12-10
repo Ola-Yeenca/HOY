@@ -120,7 +120,7 @@ export default function EventsPage() {
   if (!isAuthenticated || loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-coffee-bean to-jet-black">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="large" />
       </div>
     );
   }

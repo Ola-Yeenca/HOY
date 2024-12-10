@@ -6,9 +6,10 @@ import { FiMusic, FiCamera, FiCoffee, FiHeart, FiStar, FiGrid } from 'react-icon
 interface CategoryFilterProps {
   selected: string;
   onChange: (category: string) => void;
+  categories: { name: string; count: number }[];
 }
 
-const categories = [
+const defaultCategories = [
   { id: 'all', label: 'All', icon: FiGrid },
   { id: 'events', label: 'Events', icon: FiMusic },
   { id: 'art', label: 'Art', icon: FiCamera },
@@ -17,29 +18,37 @@ const categories = [
   { id: 'featured', label: 'Featured', icon: FiStar },
 ];
 
-export function CategoryFilter({ selected, onChange }: CategoryFilterProps) {
-  return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-      {categories.map((category) => {
-        const isSelected = selected === category.id;
-        const Icon = category.icon;
+export function CategoryFilter({ selected, onChange, categories }: CategoryFilterProps) {
+  const mappedCategories = categories.map(cat => ({
+    id: cat.name.toLowerCase(),
+    label: cat.name,
+    icon: defaultCategories.find(dc => dc.id === cat.name.toLowerCase())?.icon || FiGrid,
+    count: cat.count
+  }));
 
+  return (
+    <div className="flex flex-wrap gap-4">
+      {mappedCategories.map(({ id, label, icon: Icon, count }) => {
+        const isSelected = selected === id;
         return (
           <motion.button
-            key={category.id}
-            onClick={() => onChange(category.id)}
-            className={`
-              flex items-center gap-2 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition-all
-              ${isSelected 
-                ? 'bg-gold text-black shadow-lg shadow-gold/20' 
-                : 'bg-coffee-bean/30 text-gold hover:bg-gold/20 border border-gold/20'}
-            `}
+            key={id}
+            onClick={() => onChange(id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full border ${
+              isSelected
+                ? 'bg-gold/20 border-gold text-gold'
+                : 'bg-coffee-bean/30 border-gold/20 text-white/70 hover:bg-gold/10 hover:border-gold/50'
+            } transition-all`}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            layout
           >
-            <Icon className={`h-4 w-4 ${isSelected ? 'text-black' : 'text-gold'}`} />
-            {category.label}
+            <Icon className="w-4 h-4" />
+            <span>{label}</span>
+            {count > 0 && (
+              <span className="ml-2 px-2 py-0.5 bg-gold/10 rounded-full text-sm">
+                {count}
+              </span>
+            )}
           </motion.button>
         );
       })}

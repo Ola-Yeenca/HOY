@@ -73,6 +73,90 @@ class EventService {
       return FEATURED_EVENTS;
     }
   }
+
+  async fetchNearbyEvents({ 
+    latitude, 
+    longitude, 
+    category,
+    searchQuery,
+    page = 1,
+    limit = 10
+  }: { 
+    latitude: number;
+    longitude: number;
+    category?: string;
+    searchQuery?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ events: Event[]; total: number }> {
+    try {
+      const response = await api.get('/events/nearby', {
+        params: {
+          latitude,
+          longitude,
+          category,
+          q: searchQuery,
+          page,
+          limit
+        }
+      });
+
+      const apiEvents = response.data.events || [];
+      const total = response.data.total || 0;
+
+      // Transform API events to match Event type
+      const transformedEvents = apiEvents.map((apiEvent: any) => ({
+        id: apiEvent.id.toString(),
+        title: apiEvent.title,
+        description: apiEvent.description,
+        date: apiEvent.date,
+        location: apiEvent.location,
+        featured_image: apiEvent.featured_image || apiEvent.image,
+        image: apiEvent.image || apiEvent.featured_image,
+        capacity: apiEvent.capacity,
+        age_restriction: apiEvent.age_restriction,
+        ticket_types: apiEvent.ticket_types || [],
+        djs: apiEvent.djs || [],
+        is_featured: apiEvent.is_featured || false,
+        price: apiEvent.price || "€0",
+        category: apiEvent.category
+      }));
+
+      return {
+        events: transformedEvents,
+        total
+      };
+    } catch (error) {
+      console.error('Error fetching nearby events:', error);
+      return {
+        events: [],
+        total: 0
+      };
+    }
+  }
+
+  async getPopularCategories(): Promise<{ name: string; count: number }[]> {
+    try {
+      const response = await api.get('/events/categories');
+      const categories = response.data.categories || [];
+      return categories.map((category: string) => ({
+        name: category,
+        count: 0 // We'll update this when we have the actual count from the API
+      }));
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      return [
+        { name: 'Music', count: 0 },
+        { name: 'Art', count: 0 },
+        { name: 'Food', count: 0 },
+        { name: 'Sports', count: 0 },
+        { name: 'Technology', count: 0 },
+        { name: 'Business', count: 0 },
+        { name: 'Health', count: 0 },
+        { name: 'Education', count: 0 }
+      ];
+    }
+  }
 }
 
 export default new EventService();

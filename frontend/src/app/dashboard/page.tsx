@@ -30,7 +30,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-coffee-bean to-jet-black">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="large" />
       </div>
     );
   }
@@ -39,16 +39,23 @@ export default function DashboardPage() {
     return null;
   }
 
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-coffee-bean to-jet-black">
+        <LoadingSpinner size="large" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-coffee-bean to-jet-black">
-      <UserDashboard user={user}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Events Calendar */}
-          <div className="lg:col-span-2">
-            <EventsCalendar />
-          </div>
+      <UserDashboard user={user} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Events Calendar */}
+        <div className="lg:col-span-2">
+          <EventsCalendar />
         </div>
-      </UserDashboard>
+      </div>
     </div>
   );
 }

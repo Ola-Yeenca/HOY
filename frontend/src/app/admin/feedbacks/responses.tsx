@@ -24,9 +24,19 @@ import {
 } from '@chakra-ui/react';
 import { feedbackAdminApi } from '@/services/adminApi';
 
-export default function SurveyResponses({ surveyId }) {
-  const [responses, setResponses] = useState([]);
-  const [selectedResponse, setSelectedResponse] = useState(null);
+interface Response {
+  id: string;
+  user_email: string;
+  created_at: string;
+  answers: {
+    question: string;
+    answer: string;
+  }[];
+}
+
+export default function SurveyResponses({ surveyId }: { surveyId: string }) {
+  const [responses, setResponses] = useState<Response[]>([]);
+  const [selectedResponse, setSelectedResponse] = useState<Response | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -71,7 +81,7 @@ export default function SurveyResponses({ surveyId }) {
     }
   };
 
-  const formatResponseData = (data) => {
+  const formatResponseData = (data: any) => {
     if (typeof data === 'object') {
       return Object.entries(data)
         .map(([key, value]) => `${key}: ${value}`)
@@ -148,7 +158,7 @@ export default function SurveyResponses({ surveyId }) {
                   bg="gray.50"
                   borderRadius="md"
                 >
-                  {formatResponseData(selectedResponse.responses)}
+                  {formatResponseData(selectedResponse.answers)}
                 </Box>
               </Box>
             )}
