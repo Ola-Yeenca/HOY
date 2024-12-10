@@ -1,7 +1,10 @@
 import axios from 'axios';
-import { Survey, SurveyResponse } from '@/types/survey';
+import { Survey, Question, SurveyResponse } from '../types/survey';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error("API base URL is not defined in environment variables");
+}
 
 const feedbackApi = axios.create({
   baseURL: `${API_BASE_URL}/api/feedback`,
@@ -19,6 +22,14 @@ feedbackApi.interceptors.request.use((config) => {
   }
   return config;
 });
+
+feedbackApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error("API Error:", error.response?.data || error.message);
+    return Promise.reject(error);
+  }
+);
 
 export const surveyApi = {
   // Get all surveys

@@ -1,40 +1,42 @@
-'use server';
-
 import { Suspense } from 'react';
-import { getEvent } from '@/services/events';
+import { Metadata, ResolvingMetadata } from 'next';
+import eventService from '@/services/eventService';
 import { Loader } from '@/components/ui/loader';
 import EventClientPage from './client';
-import { Metadata } from 'next';
 
-type Props = {
-  params: {
-    id: string;
+// Enable ISR with a 60-second revalidation period
+export const revalidate = 60;
+
+export async function generateMetadata(
+  { params }: { params: { id: string } },
+  _parent: ResolvingMetadata
+): Promise<Metadata> {
+  const event = await eventService.getEventDetails(params.id);
+  
+  return {
+    title: event ? `${event.title} | HOY` : 'Event | HOY',
+    description: event?.description || 'View event details',
   };
-  searchParams?: Record<string, string | string[] | undefined>;
 }
-
-export const metadata: Metadata = {
-  title: 'Event Details | HOY',
-  description: 'View details about this event',
-};
 
 export async function generateStaticParams() {
-  return [
-    { id: '1' },
-    { id: '2' },
-    { id: '3' },
-    { id: '4' },
-  ];
+  const events = await eventService.getEvents();
+  return events.map((event) => ({
+    id: event.id.toString(),
+  }));
 }
 
-export default async function EventPage({ params, searchParams }: Props) {
-  const eventId = params?.id;
-  const event = eventId ? await getEvent(eventId) : null;
+export default async function EventPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const event = await eventService.getEventDetails(params.id);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-coffee-bean to-jet-black">
-      <Suspense fallback={<Loader className="w-12 h-12 text-gold" />}>
-        <EventClientPage eventId={eventId} initialEvent={event} />
+    <div className="container mx-auto px-4 py-8">
+      <Suspense fallback={<Loader />}>
+        <EventClientPage eventId={params.id} initialEvent={event} />
       </Suspense>
     </div>
   );

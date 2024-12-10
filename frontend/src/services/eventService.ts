@@ -1,130 +1,76 @@
 import api from './api';
 import { Event } from '@/types/events';
-import { mockEvents } from '@/data/mockEvents';
-
-interface FetchEventsParams {
-  latitude?: number;
-  longitude?: number;
-  radius?: number; // in kilometers
-  category?: string;
-  searchQuery?: string;
-  page?: number;
-  limit?: number;
-}
-
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Radius of the earth in km
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
-
-function deg2rad(deg: number): number {
-  return deg * (Math.PI/180);
-}
+import { FEATURED_EVENTS } from '@/data/events';
 
 class EventService {
-  async fetchNearbyEvents({
-    latitude,
-    longitude,
-    radius = 10,
-    category = 'all',
-    searchQuery = '',
-    page = 1,
-    limit = 20
-  }: FetchEventsParams): Promise<{ events: Event[]; total: number }> {
+  async getEventDetails(id: string): Promise<Event | null> {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Filter events based on search criteria
-      let filteredEvents = mockEvents;
-
-      if (latitude && longitude) {
-        filteredEvents = filteredEvents.filter(event => {
-          const eventCoords = event.location.coordinates;
-          if (!eventCoords) return false;
-          
-          const distance = calculateDistance(
-            latitude,
-            longitude,
-            eventCoords.latitude,
-            eventCoords.longitude
-          );
-          return distance <= radius;
-        });
+      // First check featured events
+      const featuredEvent = FEATURED_EVENTS.find(event => event.id.toString() === id);
+      if (featuredEvent) {
+        return featuredEvent;
       }
 
-      if (category !== 'all') {
-        filteredEvents = filteredEvents.filter(event => 
-          event.category.toLowerCase() === category.toLowerCase()
-        );
-      }
+      // If not found in featured events, try the API
+      const response = await api.get(`/events/${id}`);
+      const apiEvent = response.data;
 
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        filteredEvents = filteredEvents.filter(event =>
-          event.title.toLowerCase().includes(query) ||
-          event.description.toLowerCase().includes(query) ||
-          event.location.toLowerCase().includes(query)
-        );
-      }
-
-      // Calculate pagination
-      const startIndex = (page - 1) * limit;
-      const endIndex = startIndex + limit;
-      const paginatedEvents = filteredEvents.slice(startIndex, endIndex);
-
+      // Transform API response to match Event type
       return {
-        events: paginatedEvents,
-        total: filteredEvents.length
+        id: apiEvent.id.toString(),
+        title: apiEvent.title,
+        description: apiEvent.description,
+        date: apiEvent.date,
+        location: apiEvent.location,
+        featured_image: apiEvent.featured_image || apiEvent.image,
+        image: apiEvent.image || apiEvent.featured_image,
+        capacity: apiEvent.capacity,
+        age_restriction: apiEvent.age_restriction,
+        ticket_types: apiEvent.ticket_types || [],
+        djs: apiEvent.djs || [],
+        is_featured: apiEvent.is_featured || false,
+        price: apiEvent.price || "€0",
+        category: apiEvent.category
       };
-    } catch (error: any) {
-      console.error('Error fetching nearby events:', error.response?.data || error.message);
-      throw new Error('Failed to fetch nearby events');
+    } catch (error) {
+      console.error('Error fetching event:', error);
+      return null;
     }
   }
 
-  async getEventDetails(eventId: string): Promise<Event> {
+  async getEvents(): Promise<Event[]> {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const response = await api.get('/events');
+      const apiEvents = response.data.events || [];
 
-      const event = mockEvents.find(e => e.id === eventId);
-      if (!event) {
-        throw new Error('Event not found');
-      }
-
-      return event;
-    } catch (error: any) {
-      console.error('Error fetching event details:', error.response?.data || error.message);
-      throw new Error('Failed to fetch event details');
-    }
-  }
-
-  async getPopularCategories(): Promise<{ name: string; count: number }[]> {
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Get unique categories and their counts from mock data
-      const categoryCounts = mockEvents.reduce((acc, event) => {
-        acc[event.category] = (acc[event.category] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-
-      return Object.entries(categoryCounts).map(([name, count]) => ({
-        name,
-        count
+      // Transform API events to match Event type
+      const transformedEvents = apiEvents.map((apiEvent: any) => ({
+        id: apiEvent.id.toString(),
+        title: apiEvent.title,
+        description: apiEvent.description,
+        date: apiEvent.date,
+        location: apiEvent.location,
+        featured_image: apiEvent.featured_image || apiEvent.image,
+        image: apiEvent.image || apiEvent.featured_image,
+        capacity: apiEvent.capacity,
+        age_restriction: apiEvent.age_restriction,
+        ticket_types: apiEvent.ticket_types || [],
+        djs: apiEvent.djs || [],
+        is_featured: apiEvent.is_featured || false,
+        price: apiEvent.price || "€0",
+        category: apiEvent.category
       }));
-    } catch (error: any) {
-      console.error('Error fetching popular categories:', error.response?.data || error.message);
-      throw new Error('Failed to fetch popular categories');
+
+      // Combine with featured events
+      return [
+        ...FEATURED_EVENTS,
+        ...transformedEvents.filter(apiEvent => 
+          !FEATURED_EVENTS.some(fe => fe.id.toString() === apiEvent.id.toString())
+        )
+      ];
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      return FEATURED_EVENTS;
     }
   }
 }

@@ -14,7 +14,6 @@ export const ThreeDCard = ({
   className = "",
   containerClassName = "",
 }: ThreeDCardProps) => {
-  const [mounted, setMounted] = useState(false);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
@@ -32,14 +31,7 @@ export const ThreeDCard = ({
     ["-17.5deg", "17.5deg"]
   );
 
-  const [isHovered, setIsHovered] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    if (!mounted) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const width = rect.width;
     const height = rect.height;
@@ -52,49 +44,26 @@ export const ThreeDCard = ({
   };
 
   const handleMouseLeave = () => {
-    if (!mounted) return;
-    setIsHovered(false);
     x.set(0);
     y.set(0);
   };
 
-  // Initial render without animations
-  if (!mounted) {
-    return (
-      <div className={containerClassName}>
-        <div className={className}>
-          {children}
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <motion.div
+    <div
+      className={`relative perspective-1200 ${containerClassName}`}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className={`relative ${containerClassName}`}
-      style={{
-        transformStyle: "preserve-3d",
-        rotateX,
-        rotateY,
-      }}
-      animate={{
-        scale: isHovered ? 1.1 : 1,
-      }}
-      onMouseEnter={() => setIsHovered(true)}
     >
-      <div
+      <motion.div
+        className={`transform-style-3d ${className}`}
         style={{
-          transform: "translateZ(75px)",
+          rotateX,
+          rotateY,
           transformStyle: "preserve-3d",
         }}
-        className={`${className} bg-gradient-to-br from-gold/20 to-coffee-bean rounded-xl border border-gold/10 shadow-xl ${
-          isHovered ? "shadow-gold/20" : "shadow-black/20"
-        } p-6`}
       >
         {children}
-      </div>
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };

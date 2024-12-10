@@ -2,10 +2,10 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import EventDetail from '@/components/events/EventDetail';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader } from '@/components/ui/loader';
-import useAuth from '@/hooks/useAuth';
-import { Event } from '@/types/event';
+import EventDetail from '@/components/events/EventDetail';
+import { Event } from '@/types/events';
 
 interface Props {
   eventId: string;
@@ -26,7 +26,7 @@ export default function EventClientPage({ eventId, initialEvent }: Props) {
   // Show loader while checking auth
   if (isLoading) {
     return (
-      <div className="text-white-plum flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <Loader className="w-12 h-12 text-gold" />
       </div>
     );
@@ -39,8 +39,8 @@ export default function EventClientPage({ eventId, initialEvent }: Props) {
 
   if (!eventId || !initialEvent) {
     return (
-      <div className="text-white-plum flex items-center justify-center">
-        <div className="text-xl">Event not found</div>
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-xl text-white-plum">Event not found</div>
       </div>
     );
   }

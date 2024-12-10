@@ -1,31 +1,29 @@
 export interface Event {
-  id: string;
-  slug: string;
+  id: string | number;
   title: string;
   description: string;
   date: string;
-  start_time: string;
-  end_time: string;
-  location: {
-    name: string;
-    address: string;
-    coordinates?: {
-      latitude: number;
-      longitude: number;
-    };
-  };
-  featured_image: string;
-  capacity: number;
-  age_restriction: number;
-  ticket_types: Array<{
+  location: string;
+  dj?: string;
+  tag?: string;
+  image?: string;
+  featured_image?: string;
+  video?: string;
+  likes?: number;
+  comments?: number;
+  price: string;
+  featured?: boolean;
+  capacity?: number;
+  age_restriction?: number;
+  ticket_types?: Array<{
     name: string;
     price: number;
   }>;
-  djs: Array<{
+  djs?: Array<{
     name: string;
     artist_name: string;
     profile_image: string;
   }>;
-  is_featured: boolean;
-  category?: string; // Optional for backward compatibility
+  is_featured?: boolean;
+  category?: string;
 }

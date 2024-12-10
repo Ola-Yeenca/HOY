@@ -14,3 +14,12 @@ export interface Survey {
   end_date: string;
   questions: Question[];
 }
+
+export interface SurveyResponse {
+  survey_id: string;
+  responses: {
+    question_id: string;
+    answer: string | number;  // Can be string for text/multiple choice or number for rating
+  }[];
+  submitted_at?: string;  // Optional timestamp
+}
