@@ -155,7 +155,7 @@ const SurveyResponseForm: React.FC<SurveyResponseFormProps> = ({ survey, onSubmi
           </div>
 
           <div className="bg-jet-black rounded-lg p-6">
-            <h3 className="text-xl text-white mb-6">{currentQuestion.text}</h3>
+            <h3 className="text-xl text-white mb-6">{currentQuestion.question}</h3>
             {renderQuestionInput(currentQuestion)}
           </div>
 

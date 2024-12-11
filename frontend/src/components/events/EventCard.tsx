@@ -7,34 +7,10 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { FaCalendar, FaClock, FaMapMarkerAlt, FaHeart, FaTicketAlt, FaUsers } from 'react-icons/fa';
 import { IoMdPricetags } from 'react-icons/io';
+import { Event } from '@/types/events';
 
 interface EventCardProps {
-  event: {
-    id: string;
-    slug: string;
-    title: string;
-    description: string;
-    date: string;
-    start_time: string;
-    end_time: string;
-    location: {
-      name: string;
-      address: string;
-    };
-    featured_image: string;
-    capacity: number;
-    age_restriction: number;
-    ticket_types: Array<{
-      name: string;
-      price: number;
-    }>;
-    djs: Array<{
-      name: string;
-      artist_name: string;
-      profile_image: string;
-    }>;
-    is_featured: boolean;
-  };
+  event: Event;
 }
 
 export const EventCard = ({ event }: EventCardProps) => {
@@ -46,8 +22,6 @@ export const EventCard = ({ event }: EventCardProps) => {
     setMounted(true);
   }, []);
 
-  const lowestPrice = Math.min(...event.ticket_types.map(ticket => ticket.price));
-  
   // Initial render without animations
   if (!mounted) {
     return (
@@ -64,7 +38,7 @@ export const EventCard = ({ event }: EventCardProps) => {
         {/* Event Image */}
         <div className="relative aspect-[2/1] overflow-hidden">
           <Image
-            src={event.featured_image}
+            src={event.image}
             alt={event.title}
             fill
             className="object-cover"
@@ -99,37 +73,51 @@ export const EventCard = ({ event }: EventCardProps) => {
               <FaMapMarkerAlt className="mr-1 text-gold w-3 h-3" />
               {event.location.name}
             </div>
+            {event.age_restriction && (
+              <div className="flex items-center text-xs text-white-plum/80">
+                <FaUsers className="mr-1 text-gold w-3 h-3" />
+                {event.age_restriction}+
+              </div>
+            )}
           </div>
 
           {/* DJs */}
-          <div className="flex items-center mb-2 overflow-x-auto scrollbar-hide">
-            {event.djs.map((dj) => (
-              <div
-                key={dj.name}
-                className="flex-shrink-0 mr-2 last:mr-0"
-              >
-                <div className="relative w-6 h-6 rounded-full overflow-hidden border border-gold">
-                  <Image
-                    src={dj.profile_image}
-                    alt={dj.artist_name}
-                    fill
-                    className="object-cover"
-                  />
+          {event.djs && event.djs.length > 0 && (
+            <div className="flex items-center mb-2 overflow-x-auto scrollbar-hide">
+              {event.djs.map((dj) => (
+                <div
+                  key={dj.name}
+                  className="flex-shrink-0 mr-2 last:mr-0"
+                >
+                  <div className="relative w-6 h-6 rounded-full overflow-hidden border border-gold">
+                    <Image
+                      src={dj.profile_image}
+                      alt={dj.artist_name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Footer */}
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center space-x-3">
-              <div className="flex items-center">
-                <FaUsers className="mr-1 text-gold w-3 h-3" />
-                <span className="text-xs text-white-plum/80">{event.capacity}</span>
-              </div>
+              {event.capacity && (
+                <div className="flex items-center">
+                  <FaUsers className="mr-1 text-gold w-3 h-3" />
+                  <span className="text-xs text-white-plum/80">{event.capacity}</span>
+                </div>
+              )}
               <div className="flex items-center">
                 <IoMdPricetags className="mr-1 text-gold w-3 h-3" />
-                <span className="text-xs text-white-plum/80">From ${lowestPrice}</span>
+                <span className="text-xs text-white-plum/80">
+                  {event.ticket_types.length > 0 
+                    ? `From €${Math.min(...event.ticket_types.map(t => t.price))}` 
+                    : 'Free'}
+                </span>
               </div>
             </div>
             <Link
@@ -170,7 +158,7 @@ export const EventCard = ({ event }: EventCardProps) => {
       {/* Event Image */}
       <div className="relative aspect-[2/1] overflow-hidden">
         <Image
-          src={event.featured_image}
+          src={event.image}
           alt={event.title}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-110"
@@ -215,40 +203,54 @@ export const EventCard = ({ event }: EventCardProps) => {
             <FaMapMarkerAlt className="mr-1 text-gold w-3 h-3" />
             {event.location.name}
           </div>
+          {event.age_restriction && (
+            <div className="flex items-center text-xs text-white-plum/80">
+              <FaUsers className="mr-1 text-gold w-3 h-3" />
+              {event.age_restriction}+
+            </div>
+          )}
         </div>
 
         {/* DJs */}
-        <div className="flex items-center mb-2 overflow-x-auto scrollbar-hide">
-          {event.djs.map((dj, index) => (
-            <motion.div
-              key={dj.name}
-              className="flex-shrink-0 mr-2 last:mr-0"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <div className="relative w-6 h-6 rounded-full overflow-hidden border border-gold">
-                <Image
-                  src={dj.profile_image}
-                  alt={dj.artist_name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {event.djs && event.djs.length > 0 && (
+          <div className="flex items-center mb-2 overflow-x-auto scrollbar-hide">
+            {event.djs.map((dj, index) => (
+              <motion.div
+                key={dj.name}
+                className="flex-shrink-0 mr-2 last:mr-0"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="relative w-6 h-6 rounded-full overflow-hidden border border-gold">
+                  <Image
+                    src={dj.profile_image}
+                    alt={dj.artist_name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* Footer */}
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center space-x-3">
-            <div className="flex items-center">
-              <FaUsers className="mr-1 text-gold w-3 h-3" />
-              <span className="text-xs text-white-plum/80">{event.capacity}</span>
-            </div>
+            {event.capacity && (
+              <div className="flex items-center">
+                <FaUsers className="mr-1 text-gold w-3 h-3" />
+                <span className="text-xs text-white-plum/80">{event.capacity}</span>
+              </div>
+            )}
             <div className="flex items-center">
               <IoMdPricetags className="mr-1 text-gold w-3 h-3" />
-              <span className="text-xs text-white-plum/80">From ${lowestPrice}</span>
+              <span className="text-xs text-white-plum/80">
+                {event.ticket_types.length > 0 
+                  ? `From €${Math.min(...event.ticket_types.map(t => t.price))}` 
+                  : 'Free'}
+              </span>
             </div>
           </div>
           <Link

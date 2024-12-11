@@ -87,7 +87,7 @@ export default function AboutPage() {
               transition={{ delay: index * 0.1 }}
             >
               <stat.icon className="w-8 h-8 text-gold mb-4 mx-auto group-hover:scale-110 transition-transform duration-300" />
-              <h3 className="text-3xl font-playfair text-gold mb-2">{stat.number}</h3>
+              <h3 className="text-3xl font-serif text-gold mb-2">{stat.number}</h3>
               <p className="text-gray-400">{stat.label}</p>
             </motion.div>
           ))}
@@ -101,7 +101,7 @@ export default function AboutPage() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-playfair text-gold">Our Story</h2>
+            <h2 className="text-3xl font-serif text-gold">Our Story</h2>
             <p className="text-gray-300 leading-relaxed">
               HOY was born from a vision to revolutionize the way people experience events. 
               We believe that every moment should be extraordinary, and every event should 
@@ -128,14 +128,14 @@ export default function AboutPage() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-playfair text-gold">Our Mission</h2>
+            <h2 className="text-3xl font-serif text-gold">Our Mission</h2>
             <p className="text-gray-300 leading-relaxed">
               To create unforgettable experiences that blend luxury with innovation. 
               We strive to set new standards in event planning and execution, ensuring 
               that each occasion becomes a cherished memory.
             </p>
             <div className="bg-black/20 p-6 rounded-lg border border-gold/20">
-              <h3 className="text-xl font-playfair text-gold mb-4">Why Choose HOY?</h3>
+              <h3 className="text-xl font-serif text-gold mb-4">Why Choose HOY?</h3>
               <ul className="space-y-3 text-gray-300">
                 <li>• Exclusive access to premium venues</li>
                 <li>• Personalized event curation</li>
@@ -153,7 +153,7 @@ export default function AboutPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-playfair text-gold text-center mb-10">Our Achievements</h2>
+          <h2 className="text-3xl font-serif text-gold text-center mb-10">Our Achievements</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {achievements.map((achievement, index) => (
               <motion.div
@@ -165,7 +165,7 @@ export default function AboutPage() {
                 transition={{ delay: index * 0.1 }}
               >
                 <div className="text-gold text-xl mb-2">{achievement.year}</div>
-                <h3 className="text-xl font-playfair mb-2">{achievement.title}</h3>
+                <h3 className="text-xl font-serif mb-2">{achievement.title}</h3>
                 <p className="text-gray-400">{achievement.award}</p>
               </motion.div>
             ))}
@@ -179,7 +179,7 @@ export default function AboutPage() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl font-playfair text-gold text-center mb-4">Meet Our Team</h2>
+          <h2 className="text-3xl font-serif text-gold text-center mb-4">Meet Our Team</h2>
           <p className="text-gray-400 text-center max-w-2xl mx-auto mb-12">
             Our team of industry experts brings together decades of experience in luxury events,
             creative design, and exceptional service delivery.
@@ -217,9 +217,9 @@ export default function AboutPage() {
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 }}
                     >
-                      <h3 className="text-2xl font-playfair text-gold mb-2">{member.name}</h3>
-                      <p className="text-white/90 font-medium mb-3">{member.role}</p>
-                      <p className="text-white/80 text-sm mb-4 line-clamp-2 group-hover:line-clamp-none transition-all duration-300">
+                      <h3 className="text-2xl font-serif text-gold mb-1">{member.name}</h3>
+                      <p className="text-white-plum/80 mb-2">{member.role}</p>
+                      <p className="text-white-plum/80 text-sm mb-4 line-clamp-2 group-hover:line-clamp-none transition-all duration-300">
                         {member.bio}
                       </p>
                       
@@ -292,7 +292,7 @@ export default function AboutPage() {
               transition={{ delay: index * 0.1 }}
             >
               <feature.icon className="w-8 h-8 text-gold mb-4 group-hover:scale-110 transition-transform duration-300" />
-              <h3 className="text-xl font-playfair text-gold mb-3">{feature.title}</h3>
+              <h3 className="text-xl font-serif text-gold mb-3">{feature.title}</h3>
               <p className="text-gray-400">{feature.description}</p>
             </motion.div>
           ))}

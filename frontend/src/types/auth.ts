@@ -21,7 +21,7 @@ export interface AuthTokens {
 
 export interface LoginResponse {
   user: User;
-  profile: Profile;
+  profile?: Profile;
   refresh: string;
   access: string;
 }
@@ -32,6 +32,8 @@ export interface User {
   first_name: string;
   last_name: string;
   is_email_verified: boolean;
+  is_active: boolean;
+  date_joined: string;
 }
 
 export interface AuthState {

@@ -32,19 +32,27 @@ const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       register: async (data) => {
-        set({ isLoading: true, error: null });
-        try {
-          const response = await authService.register(data);
-          set({
-            user: response.user,
-            profile: response.profile,
-            isAuthenticated: true,
-            isLoading: false,
-          });
-        } catch (error: any) {
-          const message = error.message || 'Registration failed';
-          set({ error: message, isLoading: false });
-          throw error;
+        if (!get()) {
+          set({ isLoading: true, error: null });
+          try {
+            const response = await authService.register({
+              email: data.email,
+              password: data.password,
+              password_confirm: data.password_confirm,
+              firstName: data.first_name,
+              lastName: data.last_name
+            });
+            set({
+              user: response.user,
+              profile: response.profile,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+          } catch (error: any) {
+            const message = error.message || 'Registration failed';
+            set({ error: message, isLoading: false });
+            throw error;
+          }
         }
       },
 

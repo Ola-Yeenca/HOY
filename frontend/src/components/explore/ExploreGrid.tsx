@@ -5,33 +5,7 @@ import { EventCard } from '@/components/events/EventCard';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { useInView } from 'react-intersection-observer';
 import { useEffect } from 'react';
-
-interface Event {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  date: string;
-  start_time: string;
-  end_time: string;
-  location: {
-    name: string;
-    address: string;
-  };
-  featured_image: string;
-  capacity: number;
-  age_restriction: number;
-  ticket_types: Array<{
-    name: string;
-    price: number;
-  }>;
-  djs: Array<{
-    name: string;
-    artist_name: string;
-    profile_image: string;
-  }>;
-  is_featured: boolean;
-}
+import { Event } from '@/types/events';
 
 interface ExploreGridProps {
   events: Event[];

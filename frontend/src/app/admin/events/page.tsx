@@ -34,7 +34,10 @@ interface Event {
   id: string;
   title: string;
   date: string;
-  location: string;
+  location: {
+    name: string;
+    address: string;
+  };
   status: 'upcoming' | 'ongoing' | 'completed';
   attendees: number;
   imageUrl: string;
@@ -89,7 +92,8 @@ export default function EventsPage() {
 
   const filteredEvents = events.filter((event) => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         event.location.toLowerCase().includes(searchQuery.toLowerCase());
+                         event.location.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         event.location.address.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = selectedStatus === 'all' || event.status === selectedStatus;
     return matchesSearch && matchesStatus;
   });
@@ -162,7 +166,7 @@ export default function EventsPage() {
               <Tr key={event.id}>
                 <Td>{event.title}</Td>
                 <Td>{new Date(event.date).toLocaleDateString()}</Td>
-                <Td>{event.location}</Td>
+                <Td>{event.location.name}</Td>
                 <Td>{getStatusBadge(event.status)}</Td>
                 <Td>{event.attendees}</Td>
                 <Td>
@@ -233,7 +237,7 @@ export default function EventsPage() {
                   <strong>Date:</strong> {new Date(selectedEvent.date).toLocaleString()}
                 </Text>
                 <Text mb={2}>
-                  <strong>Location:</strong> {selectedEvent.location}
+                  <strong>Location:</strong> {selectedEvent.location.name} ({selectedEvent.location.address})
                 </Text>
                 <Text mb={2}>
                   <strong>Status:</strong> {getStatusBadge(selectedEvent.status)}

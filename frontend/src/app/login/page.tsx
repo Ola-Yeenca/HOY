@@ -27,7 +27,7 @@ export default function LoginPage() {
       await login(formData.email, formData.password);
       
       // Get the redirect URL from the query params (check both 'from' and 'redirect')
-      const redirectPath = searchParams.get('from') || searchParams.get('redirect');
+      const redirectPath = searchParams?.get('from') || searchParams?.get('redirect');
       
       // If no redirect specified or it's a public path, go to dashboard
       if (!redirectPath || ['/login', '/register', '/forgot-password'].includes(redirectPath)) {

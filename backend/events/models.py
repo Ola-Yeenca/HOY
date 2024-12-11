@@ -38,7 +38,6 @@ class Event(models.Model):
     description = models.TextField()
     date = models.DateField()
     start_time = models.TimeField()
-    end_time = models.TimeField()
     location = models.JSONField()  # Stores venue details including coordinates
     featured_image = models.ImageField(upload_to='event_images/')
     gallery_images = models.JSONField(default=list)  # Stores multiple image URLs

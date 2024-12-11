@@ -32,7 +32,10 @@ interface Event {
   date: string;
   description: string;
   image: string;
-  location: string;
+  location: {
+    name: string;
+    address: string;
+  };
   dj?: string;
   tag?: string;
   price?: string;
@@ -83,12 +86,15 @@ function DashboardContent({ user }: UserDashboardProps) {
                 event?.description &&
                 event?.image &&
                 event?.location &&
+                event?.location?.name &&
+                event?.location?.address &&
                 typeof event.id !== 'undefined' &&
                 typeof event.title === 'string' &&
                 typeof event.date === 'string' &&
                 typeof event.description === 'string' &&
                 typeof event.image === 'string' &&
-                typeof event.location === 'string'
+                typeof event.location.name === 'string' &&
+                typeof event.location.address === 'string'
               );
             });
           }

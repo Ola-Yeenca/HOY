@@ -52,9 +52,10 @@ export const surveyApi = {
 
   // Submit a survey response
   submitResponse: async (surveyId: string, responseData: SurveyResponse) => {
+    const { survey, ...rest } = responseData; // Destructure to remove survey field if it exists
     const response = await feedbackApi.post('/survey-responses/', {
       survey: surveyId,
-      ...responseData,
+      ...rest,
     });
     return response.data;
   },

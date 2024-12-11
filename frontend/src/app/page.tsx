@@ -204,7 +204,7 @@ function LandingPage() {
                     <div className="absolute inset-0 p-6 flex flex-col justify-end">
                       <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                         <div className="bg-gold/10 backdrop-blur-sm rounded-lg px-3 py-1 text-gold text-sm inline-block mb-3">
-                          {event.tag}
+                          {event.category}
                         </div>
                         <h3 className="text-2xl font-bold text-gold mb-2">{event.title}</h3>
                         <p className="text-white-plum/90 mb-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
@@ -214,7 +214,7 @@ function LandingPage() {
                           <div className="flex items-center gap-4 text-sm text-white-plum/60">
                             <span>{format(new Date(event.date), 'MMM dd, yyyy')}</span>
                             <span>•</span>
-                            <span>{event.location}</span>
+                            <span>{event.location.name}</span>
                           </div>
                           
                           {/* Call to Action for Non-authenticated Users */}

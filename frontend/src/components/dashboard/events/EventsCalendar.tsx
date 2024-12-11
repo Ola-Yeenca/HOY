@@ -12,22 +12,9 @@ import { FEATURED_EVENTS } from '@/data/events';
 import { cn } from '@/lib/utils';
 import { FaCalendarAlt, FaCrown, FaFire } from 'react-icons/fa';
 import Link from 'next/link';
+import { Event } from '@/types/events';
 import { FireDate } from '@/components/ui/design-system/FireDate';
 import { ThreeDCard } from '@/components/ui/design-system/3DCard';
-
-interface Event {
-  id: string | number;
-  title: string;
-  date: string;
-  description: string;
-  category: string;
-  image?: string;
-  location: string;
-  dj?: string;
-  tag?: string;
-  price?: string;
-  isHot?: boolean;
-}
 
 export default function EventsCalendar() {
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -41,7 +28,7 @@ export default function EventsCalendar() {
       try {
         const currentDate = new Date();
         // Sort all events by date
-        const sortedEvents = FEATURED_EVENTS.sort((a: Event, b: Event) => 
+        const sortedEvents = FEATURED_EVENTS.sort((a: Event, b: Event) =>
           compareAsc(parseISO(a.date), parseISO(b.date))
         );
         setEvents(sortedEvents);
@@ -76,10 +63,12 @@ export default function EventsCalendar() {
       .filter(event => isAfter(parseISO(event.date), currentDate))
       .reduce((acc, event) => {
         const eventDate = format(parseISO(event.date), 'yyyy-MM-dd');
-        acc[eventDate] = {
-          ...event,
-          isHot: event.tag === 'VIP' || event.featured
-        };
+        if (!acc[eventDate]) {
+          acc[eventDate] = {
+            ...event,
+            is_featured: event.category === 'VIP' || event.is_featured
+          };
+        }
         return acc;
       }, {} as Record<string, Event>);
   }, [events]);
@@ -96,7 +85,7 @@ export default function EventsCalendar() {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-96">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="large" />
       </div>
     );
   }
@@ -184,7 +173,7 @@ export default function EventsCalendar() {
                 },
                 hot: (date) => {
                   const dateStr = format(date, 'yyyy-MM-dd');
-                  return eventDates[dateStr]?.isHot;
+                  return eventDates[dateStr]?.is_featured ?? false;
                 }
               }}
               styles={{
@@ -193,41 +182,15 @@ export default function EventsCalendar() {
                   fontWeight: 'normal'
                 },
                 day: {
-                  color: 'white'
-                },
-                day_selected: { 
-                  color: '#D4AF37',
-                  fontWeight: 'bold'
-                },
-                day_event: {
                   position: 'relative',
                   color: 'white',
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '24px',
-                    height: '24px',
-                    backgroundColor: 'rgba(212, 175, 55, 0.15)',
-                    borderRadius: '50%',
-                    zIndex: -1
-                  }
-                },
-                day_hot: {
-                  position: 'relative',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '32px',
-                    height: '32px',
-                    background: 'radial-gradient(circle, rgba(255,69,0,0.2) 0%, rgba(255,69,0,0) 70%)',
-                    animation: 'pulse 2s infinite'
-                  }
+                  backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 },
                 caption: {
                   color: 'white'
@@ -283,7 +246,7 @@ export default function EventsCalendar() {
                     onClick={() => setSelectedEvent(event)}
                   >
                     <div className="flex items-center gap-4">
-                      {event.tag === 'VIP' && (
+                      {event.category === 'VIP' && (
                         <div className="flex-shrink-0">
                           <FireDate date={parseISO(event.date)} isUpNext={true} />
                         </div>
@@ -303,13 +266,13 @@ export default function EventsCalendar() {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {event.tag === 'VIP' && (
+                        {event.category === 'VIP' && (
                           <span className="px-2 py-1 bg-gold/20 rounded-full text-xs text-gold flex items-center gap-1">
                             <FaCrown className="w-3 h-3" />
                             VIP
                           </span>
                         )}
-                        {event.isHot && (
+                        {event.is_featured && (
                           <span className="px-2 py-1 bg-red-500/20 rounded-full text-xs text-red-500 flex items-center gap-1">
                             <FaFire className="w-3 h-3" />
                             HOT
@@ -349,18 +312,18 @@ export default function EventsCalendar() {
                     </div>
                     <div className="flex items-center gap-2 text-white/60">
                       <span className="text-gold">Location:</span>
-                      {selectedEvent.location}
+                      {selectedEvent.location.name} - {selectedEvent.location.address}
                     </div>
-                    {selectedEvent.dj && (
+                    {selectedEvent.djs && selectedEvent.djs.length > 0 && (
                       <div className="flex items-center gap-2 text-white/60">
                         <span className="text-gold">DJ:</span>
-                        {selectedEvent.dj}
+                        {selectedEvent.djs.map(dj => dj.name).join(', ')}
                       </div>
                     )}
-                    {selectedEvent.price && (
+                    {selectedEvent.ticket_types && selectedEvent.ticket_types.length > 0 && (
                       <div className="flex items-center gap-2 text-white/60">
                         <span className="text-gold">Price:</span>
-                        {selectedEvent.price}
+                        {selectedEvent.ticket_types.map(ticket => `${ticket.name}: $${ticket.price}`).join(', ')}
                       </div>
                     )}
                   </div>

@@ -5,21 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FaCalendar, FaClock, FaMapMarkerAlt, FaUsers, FaRegHeart, FaHeart } from 'react-icons/fa';
 import { useState } from 'react';
-
-interface Event {
-  id: string;
-  title: string;
-  image: string;
-  date: string;
-  time: string;
-  location: string;
-  price: string;
-  attendees: number;
-  dj: {
-    name: string;
-    image: string;
-  };
-}
+import { Event } from '@/types/events';
 
 interface EventsListProps {
   category?: string;
@@ -32,44 +18,113 @@ export function EventsList({ category = 'all' }: EventsListProps) {
     {
       id: '1',
       title: 'Neon Dreams Festival',
-      image: '/images/event-2.jpg',
-      date: 'July 20, 2024',
-      time: '9:00 PM',
-      location: 'Skyline Warehouse, Downtown',
-      price: '$45',
-      attendees: 850,
-      dj: {
-        name: 'DJ Cascade',
-        image: '/images/dj-1.jpg',
+      description: 'Join us for a night of neon-lit electronic music experience.',
+      slug: 'neon-dreams-festival',
+      image: '/images/events/neon-dreams.jpg',
+      date: '2024-12-20',
+      start_time: '20:00',
+      location: {
+        name: 'Neon Arena',
+        address: '123 Neon Street',
+        city: 'San Francisco',
+        latitude: 37.7749,
+        longitude: -122.4194
       },
+      djs: [
+        {
+          id: 'dj1',
+          name: 'DJ Neon',
+          artist_name: 'Neon Master',
+          bio: 'Electronic music specialist',
+          profile_image: '/images/djs/dj-neon.jpg',
+          genres: ['Electronic', 'House'],
+          social_media: {}
+        }
+      ],
+      capacity: 500,
+      ticket_types: [
+        {
+          name: 'General Admission',
+          price: 50
+        }
+      ],
+      featured_image: '/images/events/neon-dreams-featured.jpg',
+      age_restriction: '18+',
+      is_featured: true
     },
     {
       id: '2',
       title: 'Deep House Sessions',
-      image: '/images/event-3.jpg',
-      date: 'August 5, 2024',
-      time: '10:00 PM',
-      location: 'Underground Club, West End',
-      price: '$35',
-      attendees: 400,
-      dj: {
-        name: 'Luna Beat',
-        image: '/images/dj-2.jpg',
+      description: 'Experience the deep, soulful sounds of house music.',
+      slug: 'deep-house-sessions',
+      image: '/images/events/deep-house.jpg',
+      date: '2024-12-21',
+      start_time: '22:00',
+      location: {
+        name: 'Underground Club',
+        address: '456 Underground Street',
+        city: 'San Francisco',
+        latitude: 37.7859,
+        longitude: -122.4364
       },
+      djs: [
+        {
+          id: 'dj2',
+          name: 'DJ Deep',
+          artist_name: 'Deep Master',
+          bio: 'Deep house specialist',
+          profile_image: '/images/djs/dj-deep.jpg',
+          genres: ['Deep House'],
+          social_media: {}
+        }
+      ],
+      capacity: 400,
+      ticket_types: [
+        {
+          name: 'General Admission',
+          price: 40
+        }
+      ],
+      featured_image: '/images/events/deep-house-featured.jpg',
+      age_restriction: '18+',
+      is_featured: false
     },
     {
       id: '3',
       title: 'Techno Nights',
-      image: '/images/event-4.jpg',
-      date: 'August 12, 2024',
-      time: '11:00 PM',
-      location: 'The Vault, Industrial District',
-      price: '$40',
-      attendees: 600,
-      dj: {
-        name: 'Rhythm X',
-        image: '/images/dj-3.jpg',
+      description: 'A night of pulsating techno beats.',
+      slug: 'techno-nights',
+      image: '/images/events/techno-nights.jpg',
+      date: '2024-12-22',
+      start_time: '23:00',
+      location: {
+        name: 'The Vault',
+        address: '789 Vault Street',
+        city: 'San Francisco',
+        latitude: 37.7963,
+        longitude: -122.4056
       },
+      djs: [
+        {
+          id: 'dj3',
+          name: 'DJ Techno',
+          artist_name: 'Techno Master',
+          bio: 'Techno specialist',
+          profile_image: '/images/djs/dj-techno.jpg',
+          genres: ['Techno'],
+          social_media: {}
+        }
+      ],
+      capacity: 600,
+      ticket_types: [
+        {
+          name: 'General Admission',
+          price: 45
+        }
+      ],
+      featured_image: '/images/events/techno-nights-featured.jpg',
+      age_restriction: '18+',
+      is_featured: true
     },
   ];
 
@@ -121,21 +176,25 @@ export function EventsList({ category = 'all' }: EventsListProps) {
               )}
             </button>
             <div className="absolute bottom-4 left-4 flex items-center gap-2">
-              <div className="relative w-10 h-10 rounded-full overflow-hidden">
-                <Image
-                  src={event.dj.image}
-                  alt={event.dj.name}
-                  fill
-                  width={80}
-                  height={80}
-                  sizes="40px"
-                  className="object-cover"
-                />
-              </div>
-              <div>
-                <p className="text-chalk text-sm">Featuring</p>
-                <p className="text-gold font-semibold">{event.dj.name}</p>
-              </div>
+              {event.djs && event.djs.length > 0 && (
+                <>
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden">
+                    <Image
+                      src={event.djs[0].profile_image}
+                      alt={event.djs[0].name}
+                      fill
+                      width={80}
+                      height={80}
+                      sizes="40px"
+                      className="object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-chalk text-sm">Featuring</p>
+                    <p className="text-gold font-semibold">{event.djs[0].name}</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -149,22 +208,26 @@ export function EventsList({ category = 'all' }: EventsListProps) {
               </div>
               <div className="flex items-center gap-2 text-chalk">
                 <FaClock className="text-gold" />
-                <span>{event.time}</span>
+                <span>{event.start_time}</span>
               </div>
               <div className="flex items-center gap-2 text-chalk">
                 <FaMapMarkerAlt className="text-gold" />
-                <span>{event.location}</span>
+                <span>{event.location.name}, {event.location.address}, {event.location.city}</span>
               </div>
               <div className="flex items-center gap-2 text-chalk">
                 <FaUsers className="text-gold" />
-                <span>{event.attendees} attending</span>
+                <span>{event.capacity} attending</span>
               </div>
             </div>
 
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p className="text-sm text-chalk">Price</p>
-                <p className="text-gold font-bold text-xl">{event.price}</p>
+                <p className="text-gold font-bold text-xl">
+                  {event.ticket_types && event.ticket_types.length > 0
+                    ? `$${event.ticket_types[0].price}`
+                    : 'TBA'}
+                </p>
               </div>
               <Link
                 href={`/events/${event.id}`}

@@ -14,7 +14,10 @@ interface SettingsState {
   profileVisibility: 'public' | 'private';
   marketingEmails: boolean;
   bio: string;
-  location: string;
+  location: {
+    name: string;
+    address: string;
+  };
   favorite_genres: string[];
   favorite_artists: string[];
 }
@@ -24,7 +27,7 @@ function useParallax(value: MotionValue<number>, distance: number) {
 }
 
 export default function SettingsPage() {
-  const { user, isAuthenticated, checkAuth, updateUser } = useAuth();
+  const { user, isAuthenticated, checkAuth } = useAuth();
   const router = useRouter();
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
@@ -39,7 +42,10 @@ export default function SettingsPage() {
     profileVisibility: 'public',
     marketingEmails: false,
     bio: '',
-    location: '',
+    location: {
+      name: '',
+      address: '',
+    },
     favorite_genres: [],
     favorite_artists: [],
   });
@@ -73,7 +79,10 @@ export default function SettingsPage() {
         profileVisibility: settingsResponse.data.profile_visibility ?? 'public',
         marketingEmails: settingsResponse.data.marketing_emails ?? false,
         bio: profileResponse.data.bio ?? '',
-        location: profileResponse.data.location ?? '',
+        location: {
+          name: profileResponse.data.location_name ?? '',
+          address: profileResponse.data.location_address ?? '',
+        },
         favorite_genres: profileResponse.data.favorite_genres ?? [],
         favorite_artists: profileResponse.data.favorite_artists ?? [],
       });
@@ -204,13 +213,13 @@ export default function SettingsPage() {
       });
 
       if (user) {
-        updateUser({
-          ...user,
-          profile: {
-            ...user.profile,
-            profile_image: response.data.image_url,
-          },
-        });
+        // updateUser({
+        //   ...user,
+        //   profile: {
+        //     ...user.profile,
+        //     profile_image: response.data.image_url,
+        //   },
+        // });
       }
       toast.success('Profile image updated successfully');
     } catch (error) {
@@ -227,13 +236,13 @@ export default function SettingsPage() {
       await api.delete('/profiles/me/image/');
 
       if (user) {
-        updateUser({
-          ...user,
-          profile: {
-            ...user.profile,
-            profile_image: null,
-          },
-        });
+        // updateUser({
+        //   ...user,
+        //   profile: {
+        //     ...user.profile,
+        //     profile_image: null,
+        //   },
+        // });
       }
       toast.success('Profile image removed successfully');
     } catch (error) {
@@ -313,13 +322,22 @@ export default function SettingsPage() {
                 <label className="block text-sm font-medium text-gray-300 mb-2">
                   Location
                 </label>
-                <input
-                  type="text"
-                  value={settings.location}
-                  onChange={(e) => setSettings(prev => ({ ...prev, location: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-gold focus:border-transparent"
-                  placeholder="Your location"
-                />
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={settings.location.name}
+                    onChange={(e) => setSettings(prev => ({ ...prev, location: { ...prev.location, name: e.target.value } }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-gold focus:border-transparent"
+                    placeholder="Location Name"
+                  />
+                  <input
+                    type="text"
+                    value={settings.location.address}
+                    onChange={(e) => setSettings(prev => ({ ...prev, location: { ...prev.location, address: e.target.value } }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-gold focus:border-transparent"
+                    placeholder="Location Address"
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">

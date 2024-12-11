@@ -14,22 +14,7 @@ import axios from '@/services/api';
 import Image from 'next/image';
 import { AnimatePresence } from 'framer-motion';
 import { FEATURED_EVENTS } from '@/data/events';
-
-interface Event {
-  id: string | number;
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  image: string;
-  video?: string;
-  dj?: string;
-  tag?: string;
-  price?: string;
-  featured?: boolean;
-  likes?: number;
-  comments?: number;
-}
+import { Event } from '@/types/events';
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -125,7 +110,7 @@ export default function EventsPage() {
     );
   }
 
-  const featuredEvent = events.find(event => event.featured);
+  const featuredEvent = events.find(event => event.is_featured);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-coffee-bean to-jet-black text-white-plum">
@@ -181,52 +166,38 @@ export default function EventsPage() {
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-gold via-gold/50 to-gold rounded-2xl blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
                 
                 <div className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-black/80 to-black/40 backdrop-blur-sm border border-gold/20">
-                  {featuredEvent.video ? (
-                    <video
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      className="absolute inset-0 w-full h-full object-cover opacity-80"
-                    >
-                      <source src={featuredEvent.video} type="video/mp4" />
-                    </video>
-                  ) : (
-                    <Image
-                      src={featuredEvent.image}
-                      alt={featuredEvent.title}
-                      width={800}
-                      height={450}
-                      className="absolute inset-0 w-full h-full object-cover opacity-80"
-                    />
-                  )}
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+                  <Image
+                    src={featuredEvent.featured_image}
+                    alt={featuredEvent.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
                   
-                  <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                    <div className="mb-4">
-                      <span className="inline-block px-4 py-1 bg-gold/20 backdrop-blur-sm rounded-full text-sm text-gold mb-4">
-                        Featured Event
-                      </span>
-                      <h3 className="text-3xl font-bold mb-2">{featuredEvent.title}</h3>
-                      <p className="text-white-plum/90 mb-4">
-                        {featuredEvent.description}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="text-sm text-white/60 flex items-center gap-2">
-                          <FaCalendarAlt className="text-gold" />
-                          {format(parseISO(featuredEvent.date), 'EEEE, MMM d, yyyy')}
-                        </div>
-                        <span className="text-white-plum/60">•</span>
-                        <span className="text-white-plum/60">{featuredEvent.location}</span>
+                <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                  <div className="mb-4">
+                    <span className="inline-block px-4 py-1 bg-gold/20 backdrop-blur-sm rounded-full text-sm text-gold mb-4">
+                      Featured Event
+                    </span>
+                    <h3 className="text-3xl font-bold mb-2">{featuredEvent.title}</h3>
+                    <p className="text-white-plum/90 mb-4">
+                      {featuredEvent.description}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="text-sm text-white/60 flex items-center gap-2">
+                        <FaCalendarAlt className="text-gold" />
+                        {format(parseISO(featuredEvent.date), 'EEEE, MMM d, yyyy')}
                       </div>
-                      <button className="group relative px-6 py-2 bg-gold/20 hover:bg-gold/30 backdrop-blur-sm rounded-lg text-gold transition-all duration-300 hover:pl-10">
-                        <FaPlay className="absolute left-4 opacity-0 group-hover:opacity-100 transition-all duration-300" />
-                        <span>Learn More</span>
-                      </button>
+                      <span className="text-white-plum/60">•</span>
+                      <span className="text-white-plum/60">{featuredEvent.location.name}</span>
                     </div>
+                    <button className="group relative px-6 py-2 bg-gold/20 hover:bg-gold/30 backdrop-blur-sm rounded-lg text-gold transition-all duration-300 hover:pl-10">
+                      <FaPlay className="absolute left-4 opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                      <span>Learn More</span>
+                    </button>
                   </div>
                 </div>
               </motion.div>
@@ -265,7 +236,7 @@ export default function EventsPage() {
                             <FaCalendarAlt className="text-gold" />
                             {format(parseISO(upNextEvent.date), 'EEEE, MMM d, yyyy')}
                           </div>
-                          {upNextEvent.tag === 'VIP' && (
+                          {upNextEvent.category === 'VIP' && (
                             <span className="inline-flex items-center gap-1 px-3 py-1 bg-gold/30 backdrop-blur-sm rounded-full text-sm text-gold">
                               <FaCrown className="w-3 h-3" />
                               VIP
@@ -278,11 +249,15 @@ export default function EventsPage() {
                         </p>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="text-gold font-semibold">{upNextEvent.price}</span>
+                            <span className="text-gold font-semibold">
+                              {upNextEvent.ticket_types.length > 0 
+                                ? `From €${Math.min(...upNextEvent.ticket_types.map(t => t.price))}` 
+                                : 'Free'}
+                            </span>
                           </div>
                           <button className="group relative px-6 py-2 bg-transparent border border-gold text-gold rounded-lg overflow-hidden">
                             <span className="relative z-10 group-hover:text-jet-black transition-colors duration-300">
-                              Book Now
+                              Learn More
                             </span>
                             <motion.div
                               className="absolute inset-0 bg-gold"
@@ -330,7 +305,7 @@ export default function EventsPage() {
                               <FaCalendarAlt className="text-gold" />
                               {format(parseISO(event.date), 'EEEE, MMM d, yyyy')}
                             </div>
-                            {event.tag === 'VIP' && (
+                            {event.category === 'VIP' && (
                               <span className="inline-flex items-center gap-1 px-3 py-1 bg-gold/30 backdrop-blur-sm rounded-full text-sm text-gold">
                                 <FaCrown className="w-3 h-3" />
                                 VIP
@@ -343,7 +318,11 @@ export default function EventsPage() {
                           </p>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="text-gold font-semibold">{event.price}</span>
+                              <span className="text-gold font-semibold">
+                                {event.ticket_types.length > 0 
+                                  ? `From €${Math.min(...event.ticket_types.map(t => t.price))}` 
+                                  : 'Free'}
+                              </span>
                             </div>
                             <button className="group relative px-6 py-2 bg-transparent border border-gold text-gold rounded-lg overflow-hidden">
                               <span className="relative z-10 group-hover:text-jet-black transition-colors duration-300">
@@ -401,7 +380,7 @@ export default function EventsPage() {
                               <FaCalendarAlt className="text-gold" />
                               {format(parseISO(event.date), 'EEEE, MMM d, yyyy')}
                             </div>
-                            {event.tag === 'VIP' && (
+                            {event.category === 'VIP' && (
                               <span className="inline-flex items-center gap-1 px-3 py-1 bg-gold/30 backdrop-blur-sm rounded-full text-sm text-gold">
                                 <FaCrown className="w-3 h-3" />
                                 VIP
@@ -414,7 +393,11 @@ export default function EventsPage() {
                           </p>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <span className="text-gold font-semibold">{event.price}</span>
+                              <span className="text-gold font-semibold">
+                                {event.ticket_types.length > 0 
+                                  ? `From €${Math.min(...event.ticket_types.map(t => t.price))}` 
+                                  : 'Free'}
+                              </span>
                             </div>
                             <button className="group relative px-6 py-2 bg-transparent border border-gold text-gold rounded-lg overflow-hidden">
                               <span className="relative z-10 group-hover:text-jet-black transition-colors duration-300">

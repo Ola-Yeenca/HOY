@@ -117,7 +117,7 @@ class AuthService {
           user: cachedUser,
           access: this.getTokens()?.access || '',
           refresh: this.getTokens()?.refresh || '',
-          profile: null
+          profile: undefined
         };
       }
 
@@ -143,12 +143,23 @@ class AuthService {
     }
   }
 
+  async resetPassword(token: string, password: string): Promise<void> {
+    try {
+      await api.post('/users/auth/reset-password/', {
+        token,
+        password
+      });
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
   private setTokens(tokens: AuthTokens): void {
     storage.setItem(TOKEN_KEY, JSON.stringify(tokens));
     sessionManager.setCookie('auth_status', 'true');
   }
 
-  private getTokens(): AuthTokens | null {
+  getTokens(): AuthTokens | null {
     const tokensStr = storage.getItem(TOKEN_KEY);
     return tokensStr ? JSON.parse(tokensStr) : null;
   }
@@ -157,6 +168,30 @@ class AuthService {
     storage.removeItem(TOKEN_KEY);
     storage.removeItem(USER_KEY);
     delete api.defaults.headers.common['Authorization'];
+  }
+
+  async refreshToken(): Promise<AuthTokens | null> {
+    try {
+      const tokens = this.getTokens();
+      if (!tokens?.refresh) {
+        return null;
+      }
+
+      const response = await api.post<AuthTokens>('/users/auth/refresh/', {
+        refresh: tokens.refresh
+      });
+
+      const newTokens: AuthTokens = {
+        access: response.data.access,
+        refresh: response.data.refresh
+      };
+
+      this.setTokens(newTokens);
+      return newTokens;
+    } catch (error) {
+      this.clearAuth();
+      throw error;
+    }
   }
 }
 

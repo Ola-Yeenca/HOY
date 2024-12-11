@@ -9,7 +9,10 @@ interface SavedEvent {
   id: string;
   title: string;
   date: string;
-  location: string;
+  location: {
+    name: string;
+    address: string;
+  };
   description: string;
   image: string;
   price: string;
@@ -22,7 +25,10 @@ export default function SavedEvents() {
       id: '1',
       title: "New Year's Eve Gala",
       date: 'December 31, 2024',
-      location: 'The Ritz-Carlton, San Francisco',
+      location: {
+        name: 'The Ritz-Carlton',
+        address: 'San Francisco'
+      },
       description: 'Ring in the new year with an unforgettable night of luxury and celebration',
       image: '/images/events/nye-gala.jpg',
       price: '$1,000',
@@ -32,7 +38,10 @@ export default function SavedEvents() {
       id: '2',
       title: 'Summer Yacht Party',
       date: 'July 15, 2024',
-      location: 'Marina Bay, Miami',
+      location: {
+        name: 'Marina Bay',
+        address: 'Miami'
+      },
       description: 'Experience the ultimate luxury yacht party with stunning ocean views',
       image: '/images/events/yacht-party.jpg',
       price: '$1,500',
@@ -80,7 +89,7 @@ export default function SavedEvents() {
                     </div>
                     <div className="flex items-center gap-2">
                       <FaMapMarkerAlt className="w-4 h-4" />
-                      <span>{event.location}</span>
+                      <span>{event.location.name}, {event.location.address}</span>
                     </div>
                   </div>
                 </div>

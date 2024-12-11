@@ -15,6 +15,12 @@ export default function VerifyEmailPage() {
 
   useEffect(() => {
     const verifyEmail = async () => {
+      if (!searchParams) {
+        setStatus('error');
+        setMessage('Invalid verification link');
+        return;
+      }
+
       const token = searchParams.get('token');
       const uid = searchParams.get('uid');
 

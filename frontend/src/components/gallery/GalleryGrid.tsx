@@ -77,12 +77,10 @@ export function GalleryGrid({ category }: GalleryGridProps) {
           exit={{ opacity: 0 }}
           className="group relative aspect-[4/3] rounded-lg overflow-hidden border border-dark-gray hover:border-gold transition-colors duration-200"
         >
-          <img
+          <Image
             src={image.url}
             alt={image.title}
             fill
-            width={800}
-            height={600}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             priority={image.id <= 3}
             className="object-cover transition-transform duration-500 group-hover:scale-105"

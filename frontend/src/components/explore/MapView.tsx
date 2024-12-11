@@ -61,14 +61,14 @@ export function MapView({ searchQuery, category, userLocation, events }: MapView
 
         {/* Event Markers */}
         {events.map(event => {
-          const coords = event.location.coordinates;
-          if (!coords) return null;
+          const { latitude, longitude } = event.location;
+          if (!latitude || !longitude) return null;
           
           return (
             <Marker
               key={event.id}
-              latitude={coords.latitude}
-              longitude={coords.longitude}
+              latitude={latitude}
+              longitude={longitude}
             >
               <button
                 onClick={e => {
@@ -86,14 +86,13 @@ export function MapView({ searchQuery, category, userLocation, events }: MapView
 
         {/* Event Popup */}
         <AnimatePresence>
-          {selectedEvent && selectedEvent.location.coordinates && (
+          {selectedEvent && selectedEvent.location && (
             <Popup
-              latitude={selectedEvent.location.coordinates.latitude}
-              longitude={selectedEvent.location.coordinates.longitude}
+              latitude={selectedEvent.location.latitude}
+              longitude={selectedEvent.location.longitude}
               onClose={() => setSelectedEvent(null)}
-              closeButton={false}
+              closeOnClick={false}
               anchor="bottom"
-              offset={20}
             >
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -118,7 +117,7 @@ export function MapView({ searchQuery, category, userLocation, events }: MapView
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="flex items-center gap-1 text-gray-300">
                     <FiMapPin className="text-gold" />
-                    {selectedEvent.location}
+                    {selectedEvent.location.name}, {selectedEvent.location.address}
                   </div>
                   <div className="flex items-center gap-1 text-gray-300">
                     <FiCalendar className="text-gold" />
@@ -126,11 +125,7 @@ export function MapView({ searchQuery, category, userLocation, events }: MapView
                   </div>
                   <div className="flex items-center gap-1 text-gray-300">
                     <FiUsers className="text-gold" />
-                    {selectedEvent.attendees} attending
-                  </div>
-                  <div className="flex items-center gap-1 text-gray-300">
-                    <FiStar className="text-gold" />
-                    {selectedEvent.rating}
+                    {selectedEvent.capacity} capacity
                   </div>
                 </div>
 

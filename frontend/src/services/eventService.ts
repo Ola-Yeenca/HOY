@@ -19,17 +19,18 @@ class EventService {
       return {
         id: apiEvent.id.toString(),
         title: apiEvent.title,
+        slug: apiEvent.slug,
         description: apiEvent.description,
         date: apiEvent.date,
+        start_time: apiEvent.start_time,
         location: apiEvent.location,
-        featured_image: apiEvent.featured_image || apiEvent.image,
-        image: apiEvent.image || apiEvent.featured_image,
-        capacity: apiEvent.capacity,
-        age_restriction: apiEvent.age_restriction,
-        ticket_types: apiEvent.ticket_types || [],
+        featured_image: apiEvent.featured_image,
+        image: apiEvent.image || apiEvent.featured_image, // Use featured_image as fallback
         djs: apiEvent.djs || [],
+        capacity: apiEvent.capacity,
+        ticket_types: apiEvent.ticket_types || [],
+        status: apiEvent.status || 'draft',
         is_featured: apiEvent.is_featured || false,
-        price: apiEvent.price || "€0",
         category: apiEvent.category
       };
     } catch (error) {
@@ -47,17 +48,18 @@ class EventService {
       const transformedEvents = apiEvents.map((apiEvent: any) => ({
         id: apiEvent.id.toString(),
         title: apiEvent.title,
+        slug: apiEvent.slug,
         description: apiEvent.description,
         date: apiEvent.date,
+        start_time: apiEvent.start_time,
         location: apiEvent.location,
-        featured_image: apiEvent.featured_image || apiEvent.image,
-        image: apiEvent.image || apiEvent.featured_image,
-        capacity: apiEvent.capacity,
-        age_restriction: apiEvent.age_restriction,
-        ticket_types: apiEvent.ticket_types || [],
+        featured_image: apiEvent.featured_image,
+        image: apiEvent.image || apiEvent.featured_image, // Use featured_image as fallback
         djs: apiEvent.djs || [],
+        capacity: apiEvent.capacity,
+        ticket_types: apiEvent.ticket_types || [],
+        status: apiEvent.status || 'draft',
         is_featured: apiEvent.is_featured || false,
-        price: apiEvent.price || "€0",
         category: apiEvent.category
       }));
 
@@ -108,17 +110,18 @@ class EventService {
       const transformedEvents = apiEvents.map((apiEvent: any) => ({
         id: apiEvent.id.toString(),
         title: apiEvent.title,
+        slug: apiEvent.slug,
         description: apiEvent.description,
         date: apiEvent.date,
+        start_time: apiEvent.start_time,
         location: apiEvent.location,
-        featured_image: apiEvent.featured_image || apiEvent.image,
-        image: apiEvent.image || apiEvent.featured_image,
-        capacity: apiEvent.capacity,
-        age_restriction: apiEvent.age_restriction,
-        ticket_types: apiEvent.ticket_types || [],
+        featured_image: apiEvent.featured_image,
+        image: apiEvent.image || apiEvent.featured_image, // Use featured_image as fallback
         djs: apiEvent.djs || [],
+        capacity: apiEvent.capacity,
+        ticket_types: apiEvent.ticket_types || [],
+        status: apiEvent.status || 'draft',
         is_featured: apiEvent.is_featured || false,
-        price: apiEvent.price || "€0",
         category: apiEvent.category
       }));
 

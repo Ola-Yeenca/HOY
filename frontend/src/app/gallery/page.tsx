@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { BentoGrid, BentoGridItem } from '@/components/ui/design-system/BentoGrid';
-import { FaHeart, FaDownload, FaShare } from 'react-icons/fa';
+import { FaHeart, FaRegHeart, FaDownload, FaShare } from 'react-icons/fa';
 import { format } from 'date-fns';
 import api from '@/services/api';
 
@@ -436,55 +436,41 @@ export default function GalleryPage() {
                       >
                         <Image
                           src={image.image}
-                          alt={image.caption || 'Event image'}
-                          width={800}
-                          height={600}
-                          className="object-cover transition-transform duration-700 group-hover:scale-110"
-                          priority={index < 4}
-                          loading={index < 4 ? 'eager' : 'lazy'}
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          alt={image.caption || 'Untitled'}
+                          fill
+                          className="object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                        <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-between">
-                          <div className="flex items-center gap-4">
-                            <button 
-                              onClick={(e) => handleLike(image.id, e)}
-                              className={`flex items-center gap-2 transition-colors ${
-                                image.has_user_liked 
-                                  ? 'text-gold hover:text-gold/80' 
-                                  : 'text-white hover:text-gold'
-                              }`}
-                              title={image.has_user_liked ? 'Unlike photo' : 'Like photo'}
-                            >
-                              <FaHeart className={`text-xl transform transition-transform ${
-                                image.has_user_liked ? 'scale-110 animate-pulse' : 'scale-100'
-                              }`} />
-                              <span className="text-sm ml-1">{image.likes_count}</span>
-                            </button>
-                            <button 
-                              onClick={(e) => handleDownload(image.id, e)}
-                              className="text-white hover:text-gold transition-colors"
-                            >
-                              <FaDownload className="text-xl" />
-                              <span className="text-sm ml-1">{image.downloads_count}</span>
-                            </button>
-                            <button 
-                              onClick={() => handleShare(image)}
-                              className="text-white hover:text-gold transition-colors"
-                            >
-                              <FaShare className="text-xl" />
-                            </button>
-                          </div>
-                          {image.photographer && (
-                            <div className="text-sm text-white/80">
-                              📸 {image.photographer}
-                            </div>
-                          )}
-                        </div>
                       </motion.div>
                     }
-                    className={index === 3 || index === 8 ? "md:col-span-2 md:row-span-2" : ""}
-                  />
+                    className="relative overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center space-x-2">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleLike(image.id);
+                          }}
+                          className="text-white-plum hover:text-gold transition-colors"
+                        >
+                          {image.has_user_liked ? <FaHeart className="text-gold" /> : <FaRegHeart />}
+                        </button>
+                        <span className="text-sm text-white-plum">{image.likes_count}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownload(image.id);
+                          }}
+                          className="text-white-plum hover:text-gold transition-colors"
+                        >
+                          <FaDownload />
+                        </button>
+                        <span className="text-sm text-white-plum">{image.downloads_count}</span>
+                      </div>
+                    </div>
+                  </BentoGridItem>
                 ))}
               </BentoGrid>
 

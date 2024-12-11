@@ -1,7 +1,7 @@
 export interface Question {
   id: string;
-  type: 'rating' | 'text' | 'multiple_choice';
-  text: string;
+  type: string;
+  question: string;
   options?: string[];
 }
 
@@ -12,14 +12,26 @@ export interface Survey {
   survey_type: string;
   start_date: string;
   end_date: string;
+  is_active: boolean;
   questions: Question[];
 }
 
 export interface SurveyResponse {
-  survey_id: string;
-  responses: {
-    question_id: string;
-    answer: string | number;  // Can be string for text/multiple choice or number for rating
+  id: string;
+  survey: string;
+  user: string;
+  answers: {
+    question: string;
+    answer: string;
   }[];
-  submitted_at?: string;  // Optional timestamp
+  submitted_at: string;
+}
+
+export interface SurveyStats {
+  total_responses: number;
+  completion_rate: number;
+  average_rating: number;
+  response_distribution: {
+    [key: string]: number;
+  };
 }

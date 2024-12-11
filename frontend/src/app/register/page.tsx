@@ -9,7 +9,7 @@ import { FaEnvelope, FaLock, FaUser, FaGoogle, FaApple, FaSpinner } from 'react-
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, signInWithGoogle, signInWithApple, error, isLoading } = useAuth();
+  const { register, error, isLoading } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -23,8 +23,11 @@ export default function RegisterPage() {
     e.preventDefault();
     try {
       const registrationData = {
-        ...formData,
-        password_confirm: formData.confirmPassword
+        email: formData.email,
+        password: formData.password,
+        password_confirm: formData.confirmPassword,
+        first_name: formData.firstName,
+        last_name: formData.lastName
       };
       await register(registrationData);
       router.push('/login?message=Registration successful! Please log in.');
@@ -42,7 +45,7 @@ export default function RegisterPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      // await signInWithGoogle();
       router.push('/dashboard');
     } catch (error) {
       // Error is handled by the auth store
@@ -51,7 +54,7 @@ export default function RegisterPage() {
 
   const handleAppleSignIn = async () => {
     try {
-      await signInWithApple();
+      // await signInWithApple();
       router.push('/dashboard');
     } catch (error) {
       // Error is handled by the auth store

@@ -3,6 +3,8 @@
 import * as React from 'react';
 import { DayPicker } from 'react-day-picker';
 import { cn } from '@/lib/utils';
+import { buttonVariants } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -54,7 +56,22 @@ export function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => (
+        Nav: ({ dir }) => (
+          <button
+            type="button"
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+            )}
+          >
+            {dir === "previous" ? (
+              <ChevronLeft className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </button>
+        ),
+        CaptionLabel: (props) => (
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -65,29 +82,11 @@ export function Calendar({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            {...props}
           >
             <path d="m15 18-6-6 6-6" />
           </svg>
         ),
-        IconRight: ({ ...props }) => (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            {...props}
-          >
-            <path d="m9 18 6-6-6-6" />
-          </svg>
-        ),
       }}
-      {...props}
     />
   );
 }

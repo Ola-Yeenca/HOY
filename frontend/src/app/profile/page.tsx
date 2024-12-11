@@ -11,30 +11,20 @@ import ProfileEditModal from '@/components/profile/ProfileEditModal';
 import api from '@/services/api';
 import { toast } from 'react-hot-toast';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { Profile } from '@/types/auth';
 
 interface MusicPreference {
   genre: string;
   subgenres?: string[];
 }
 
-interface UserProfile {
-  bio?: string;
-  location?: string;
-  music_preferences?: MusicPreference[];
-  social_links?: {
-    instagram?: string;
-    twitter?: string;
-    facebook?: string;
-  };
-}
-
 export default function ProfilePage() {
-  const { user, profile, isAuthenticated, isLoading, checkAuth, updateUser } = useAuth();
+  const { user, profile, isAuthenticated, isLoading, checkAuth } = useAuth();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
 
   const musicGenres = [
@@ -110,14 +100,8 @@ export default function ProfilePage() {
 
       if (response.data?.image_url) {
         // Update the user profile with the new image URL
-        if (user) {
-          updateUser({
-            ...user,
-            profile: {
-              ...user.profile,
-              profile_image: response.data.image_url,
-            },
-          });
+        if (user?.profile) {
+          user.profile.profile_image = response.data.image_url;
         }
         toast.success('Profile image updated successfully');
       } else {
@@ -149,14 +133,8 @@ export default function ProfilePage() {
       await api.delete('/profiles/me/image/');
       
       // Update the user profile to remove the image
-      if (user) {
-        updateUser({
-          ...user,
-          profile: {
-            ...user.profile,
-            profile_image: null,
-          },
-        });
+      if (user?.profile) {
+        user.profile.profile_image = undefined;
       }
       toast.success('Profile image removed successfully');
     } catch (error: any) {
@@ -188,7 +166,7 @@ export default function ProfilePage() {
     }
   };
 
-  const handleProfileUpdate = async (data: Partial<UserProfile>) => {
+  const handleProfileUpdate = async (data: Partial<Profile>) => {
     try {
       await api.patch('/profiles/me/', data);
       await fetchUserProfile();
@@ -204,7 +182,7 @@ export default function ProfilePage() {
   if (isLoading || isPageLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-coffee-bean to-jet-black">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="large" />
       </div>
     );
   }
@@ -322,11 +300,12 @@ export default function ProfilePage() {
 
       {/* Edit Profile Modal */}
       <AnimatePresence>
-        {isEditing && (
+        {isEditing && userProfile && (
           <ProfileEditModal
             profile={userProfile}
             onClose={() => setIsEditing(false)}
             onSave={handleProfileUpdate}
+            isLoading={isPageLoading}
           />
         )}
       </AnimatePresence>

@@ -83,9 +83,9 @@ export default function EventDetail({ id, initialEvent }: EventDetailProps) {
         style={{ y, opacity }}
         className="fixed inset-0 -z-10"
       >
-        {event.coverImage && (
+        {event.image && (
           <Image
-            src={event.coverImage}
+            src={event.image}
             alt={event.title}
             fill
             className="object-cover"
@@ -112,7 +112,7 @@ export default function EventDetail({ id, initialEvent }: EventDetailProps) {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-4">
               <span className="text-gray-600">{new Date(event.date).toLocaleDateString()}</span>
-              <span className="text-gray-600">{event.location}</span>
+              <span className="text-gray-600">{event.location.name}</span>
             </div>
             <button className="text-red-500 hover:text-red-600">
               <FaHeart size={24} />

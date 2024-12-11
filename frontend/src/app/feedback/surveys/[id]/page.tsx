@@ -7,7 +7,8 @@ import { surveyApi } from '@/services/feedbackApi';
 import SurveyResponseForm from '@/components/feedback/SurveyResponseForm';
 
 const SurveyPage = () => {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string;
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +16,7 @@ const SurveyPage = () => {
   useEffect(() => {
     const fetchSurvey = async () => {
       try {
-        const data = await surveyApi.getSurvey(id as string);
+        const data = await surveyApi.getSurvey(id);
         setSurvey(data);
       } catch (err) {
         setError('Failed to load survey. Please try again later.');
@@ -32,7 +33,7 @@ const SurveyPage = () => {
 
   const handleSubmitResponse = async (response: any) => {
     try {
-      await surveyApi.submitResponse(id as string, response);
+      await surveyApi.submitResponse(id, response);
       // Show success message or redirect
     } catch (err) {
       setError('Failed to submit response. Please try again.');

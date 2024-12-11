@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import EnhancedSurveyCard from '@/components/feedback/EnhancedSurveyCard';
-import { Survey } from '@/types/survey';
+import { Survey } from '@/types/feedback';
 import { SurveyResponse } from '@/components/feedback/SurveyResponseForm';
 
 const FeedbackPage: React.FC = () => {
@@ -19,40 +19,46 @@ const FeedbackPage: React.FC = () => {
             title: 'Monthly Satisfaction Survey',
             description: 'Help us understand your experience with our services this month.',
             survey_type: 'satisfaction',
-            start_date: new Date(2024, 0, 1).toISOString(),
-            end_date: new Date(2024, 1, 1).toISOString(),
+            start_date: '2024-01-01',
+            end_date: '2024-01-31',
+            is_active: true,
+            created_at: '2024-01-01T00:00:00Z',
+            updated_at: '2024-01-01T00:00:00Z',
             questions: [
               {
                 id: '1',
                 type: 'rating',
-                text: 'How satisfied are you with our service?',
+                question: 'How satisfied are you with our service?',
                 options: ['1', '2', '3', '4', '5']
               },
               {
                 id: '2',
                 type: 'text',
-                text: 'What improvements would you suggest?'
+                question: 'What improvements would you suggest?'
               }
             ]
           },
           {
             id: '2',
             title: 'Feature Request Survey',
-            description: 'Share your thoughts on potential new features.',
+            description: 'Help us prioritize our upcoming features.',
             survey_type: 'feature',
-            start_date: new Date(2024, 0, 15).toISOString(),
-            end_date: new Date(2024, 1, 15).toISOString(),
+            start_date: '2024-02-01',
+            end_date: '2024-02-28',
+            is_active: true,
+            created_at: '2024-02-01T00:00:00Z',
+            updated_at: '2024-02-01T00:00:00Z',
             questions: [
               {
                 id: '1',
                 type: 'multiple_choice',
-                text: 'Which feature would you like to see next?',
+                question: 'Which feature would you like to see next?',
                 options: ['Dark mode', 'Mobile app', 'Integration with other tools', 'Custom themes']
               },
               {
                 id: '2',
                 type: 'text',
-                text: 'Any other feature suggestions?'
+                question: 'Any other feature suggestions?'
               }
             ]
           }
