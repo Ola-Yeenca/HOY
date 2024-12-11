@@ -34,7 +34,8 @@ export function Navigation() {
   const handleLogout = async () => {
     try {
       await logout();
-      window.location.href = '/';
+      // Force redirect to login page
+      window.location.replace('/login');
     } catch (error) {
       console.error('Failed to logout:', error);
     }

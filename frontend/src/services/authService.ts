@@ -39,12 +39,15 @@ class AuthService {
         refresh: response.data.refresh
       });
 
-      // Store user data in session and cookies
-      sessionManager.setCache(USER_KEY, response.data.user, SESSION_CACHE_TIME);
-      sessionManager.setCookie('user_id', response.data.user.id.toString());
+      // Store user data
+      this.setUserData(response.data.user);
       
-      // Set Authorization header
-      api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+      // Set auth status cookie
+      sessionManager.setCookie('auth_status', 'authenticated', {
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      });
       
       return response.data;
     } catch (error: any) {
@@ -55,63 +58,45 @@ class AuthService {
 
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
+      console.log('Attempting login...');
       const response = await api.post<LoginResponse>('/users/auth/login/', {
         email,
         password,
       });
       
+      console.log('Login successful, setting tokens and user data');
       this.setTokens({
         access: response.data.access,
         refresh: response.data.refresh
       });
 
-      // Store user data in session and cookies
-      sessionManager.setCache(USER_KEY, response.data.user, SESSION_CACHE_TIME);
-      sessionManager.setCookie('user_id', response.data.user.id.toString());
+      // Store user data
+      this.setUserData(response.data.user);
       
-      // Set Authorization header
-      api.defaults.headers.common['Authorization'] = `Bearer ${response.data.access}`;
+      // Set auth status cookie
+      sessionManager.setCookie('auth_status', 'authenticated', {
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax'
+      });
       
       return response.data;
     } catch (error) {
+      console.error('Login failed:', error);
       this.handleError(error);
     }
   }
 
   async logout(): Promise<void> {
-    try {
-      const tokens = this.getTokens();
-      
-      // If no tokens exist, just clear the auth state
-      if (!tokens?.access) {
-        this.clearAuth();
-        return;
-      }
-
-      // Attempt to logout on the server
-      try {
-        await api.post('/users/auth/logout/', {}, {
-          headers: {
-            Authorization: `Bearer ${tokens.access}`
-          }
-        });
-      } catch (error: any) {
-        // Log the error but don't throw it - we still want to clear local state
-        if (error.response?.status !== 401) {  // Ignore 401 errors
-          console.error('Server logout failed:', error.response?.data || error.message);
-        }
-      }
-    } finally {
-      // Clear all session data and cookies
-      this.clearAuth();
-      sessionManager.clearAll();
-    }
+    console.log('Logging out...');
+    this.clearAuth();
+    window.location.replace('/login');
   }
 
   async checkAuth(): Promise<LoginResponse> {
     try {
       // Check session cache first
-      const cachedUser = sessionManager.getCache<User>(USER_KEY);
+      const cachedUser = this.getUserData();
       if (cachedUser) {
         return {
           user: cachedUser,
@@ -134,7 +119,7 @@ class AuthService {
       });
 
       // Update cache with fresh data
-      sessionManager.setCache(USER_KEY, response.data.user, SESSION_CACHE_TIME);
+      this.setUserData(response.data.user);
       
       return response.data;
     } catch (error) {
@@ -154,20 +139,49 @@ class AuthService {
     }
   }
 
-  private setTokens(tokens: AuthTokens): void {
-    storage.setItem(TOKEN_KEY, JSON.stringify(tokens));
-    sessionManager.setCookie('auth_status', 'true');
+  clearAuth(): void {
+    console.log('Clearing auth state...');
+    // Clear tokens
+    storage.removeItem(TOKEN_KEY);
+    
+    // Clear user data
+    sessionManager.removeCache(USER_KEY);
+    sessionManager.removeCookie('user_id');
+    sessionManager.removeCookie('auth_status');
+    
+    // Clear API headers
+    delete api.defaults.headers.common['Authorization'];
+  }
+
+  setTokens(tokens: AuthTokens): void {
+    console.log('Setting auth tokens...');
+    storage.setItem(TOKEN_KEY, tokens);
+    api.defaults.headers.common['Authorization'] = `Bearer ${tokens.access}`;
+  }
+
+  setUserData(user: User): void {
+    console.log('Setting user data...');
+    sessionManager.setCache(USER_KEY, user, SESSION_CACHE_TIME);
+    sessionManager.setCookie('user_id', user.id.toString(), {
+      path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    });
   }
 
   getTokens(): AuthTokens | null {
-    const tokensStr = storage.getItem(TOKEN_KEY);
-    return tokensStr ? JSON.parse(tokensStr) : null;
+    return storage.getItem<AuthTokens>(TOKEN_KEY);
   }
 
-  private clearAuth(): void {
-    storage.removeItem(TOKEN_KEY);
-    storage.removeItem(USER_KEY);
-    delete api.defaults.headers.common['Authorization'];
+  getUserData(): User | null {
+    return sessionManager.getCache<User>(USER_KEY);
+  }
+
+  isAuthenticated(): boolean {
+    const tokens = this.getTokens();
+    const user = this.getUserData();
+    const authStatus = sessionManager.getCookie('auth_status');
+    return !!(tokens?.access && user && authStatus === 'authenticated');
   }
 
   async refreshToken(): Promise<AuthTokens | null> {
@@ -177,20 +191,29 @@ class AuthService {
         return null;
       }
 
-      const response = await api.post<AuthTokens>('/users/auth/refresh/', {
-        refresh: tokens.refresh
-      });
+      if (!refreshPromise) {
+        refreshPromise = api
+          .post<{ access: string }>('/users/auth/refresh/', {
+            refresh: tokens.refresh,
+          })
+          .then((response) => {
+            const newTokens = {
+              access: response.data.access,
+              refresh: tokens.refresh,
+            };
+            this.setTokens(newTokens);
+            return newTokens;
+          })
+          .finally(() => {
+            refreshPromise = null;
+          });
+      }
 
-      const newTokens: AuthTokens = {
-        access: response.data.access,
-        refresh: response.data.refresh
-      };
-
-      this.setTokens(newTokens);
-      return newTokens;
+      return refreshPromise;
     } catch (error) {
+      console.error('Token refresh failed:', error);
       this.clearAuth();
-      throw error;
+      return null;
     }
   }
 }

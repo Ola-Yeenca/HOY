@@ -8,26 +8,19 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
   },
+  xsrfCookieName: 'csrftoken',
+  xsrfHeaderName: 'X-CSRFToken',
 });
 
 // Request interceptor
 api.interceptors.request.use(
   async (config) => {
-    // Get CSRF token for mutation requests
-    if (['post', 'put', 'patch', 'delete'].includes(config.method || '')) {
-      try {
-        await api.get('/users/auth/csrf/');
-      } catch (error) {
-        console.error('Failed to fetch CSRF token:', error);
-      }
-    }
-
     const tokens = authService.getTokens();
     if (tokens?.access) {
       config.headers.Authorization = `Bearer ${tokens.access}`;
     }
-
     return config;
   },
   (error) => Promise.reject(error)
@@ -55,14 +48,14 @@ api.interceptors.response.use(
             return api(originalRequest);
           }
         }
-        // If we don't have refresh token or refresh failed, logout
-        await authService.logout();
+        // If we don't have refresh token or refresh failed, clear auth and redirect
+        authService.clearAuth();
+        window.location.replace('/login');
         return Promise.reject(error);
       } catch (refreshError) {
-        // Only logout if refresh actually failed (not for other errors)
-        if (refreshError.response?.status === 401) {
-          await authService.logout();
-        }
+        // If refresh fails, clear auth and redirect
+        authService.clearAuth();
+        window.location.replace('/login');
         return Promise.reject(refreshError);
       }
     }

@@ -468,7 +468,10 @@ class AuthViewSet(viewsets.ViewSet):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'error': 'Invalid credentials',
+            'details': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['post'])
     def logout(self, request):

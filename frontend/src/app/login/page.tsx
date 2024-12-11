@@ -1,15 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import useAuth from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,22 +17,18 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Login form submitted');
+    console.log('Current pathname:', window.location.pathname);
+
     setError(null);
     setIsLoading(true);
+    console.log('Attempting login with email:', formData.email);
     
     try {
-      await login(formData.email, formData.password);
-      
-      // Get the redirect URL from the query params (check both 'from' and 'redirect')
-      const redirectPath = searchParams?.get('from') || searchParams?.get('redirect');
-      
-      // If no redirect specified or it's a public path, go to dashboard
-      if (!redirectPath || ['/login', '/register', '/forgot-password'].includes(redirectPath)) {
-        router.push('/dashboard');
-      } else {
-        // Otherwise go to the requested page
-        router.push(redirectPath);
-      }
+      const response = await login(formData.email, formData.password);
+      console.log('Login successful');
+      // Force redirect to dashboard
+      window.location.replace('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
       setError(

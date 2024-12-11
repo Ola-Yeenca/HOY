@@ -112,7 +112,10 @@ class UserLoginSerializer(serializers.Serializer):
             user = authenticate(request=self.context.get('request'),
                               email=email, password=password)
             if not user:
-                msg = 'Unable to log in with provided credentials.'
+                if User.objects.filter(email=email).exists():
+                    msg = 'Password is incorrect.'
+                else:
+                    msg = 'No account found with this email address.'
                 raise serializers.ValidationError(msg, code='authorization')
         else:
             msg = 'Must include "email" and "password".'
