@@ -1,14 +1,26 @@
 import axios from 'axios';
 import authService from './authService';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_DOCKER_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const getBaseUrl = () => {
+  if (typeof window === 'undefined') {
+    // Server-side rendering
+    return process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000/api';
+  }
+  // Client-side rendering
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+};
+
+export const baseURL = getBaseUrl();
+
+console.log('API Base URL:', baseURL);
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: baseURL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest',
+    'Accept': 'application/json',
   },
   xsrfCookieName: 'csrftoken',
   xsrfHeaderName: 'X-CSRFToken',
@@ -17,19 +29,30 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   async (config) => {
+    console.log('Request URL:', config.url);
+    console.log('Request Method:', config.method);
+    
     const tokens = authService.getTokens();
     if (tokens?.access) {
       config.headers.Authorization = `Bearer ${tokens.access}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('Request interceptor error:', error);
+    return Promise.reject(error);
+  }
 );
 
 // Response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('Response status:', response.status);
+    return response;
+  },
   async (error) => {
+    console.error('Response error:', error.response?.data || error);
+    
     const originalRequest = error.config;
 
     // Check if error is 401 and we haven't already tried to refresh
@@ -51,12 +74,10 @@ api.interceptors.response.use(
         // If we don't have refresh token or refresh failed, clear auth and redirect
         authService.clearAuth();
         window.location.replace('/login');
-        return Promise.reject(error);
       } catch (refreshError) {
-        // If refresh fails, clear auth and redirect
+        console.error('Token refresh failed:', refreshError);
         authService.clearAuth();
         window.location.replace('/login');
-        return Promise.reject(refreshError);
       }
     }
 

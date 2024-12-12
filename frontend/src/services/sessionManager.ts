@@ -25,19 +25,52 @@ class SessionManager {
   }
 
   setCookie(name: string, value: string, options?: CookieAttributes): void {
-    Cookies.set(name, value, {
-      ...options,
+    const cookieOptions: CookieAttributes = {
+      path: '/',
+      sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      sameSite: options?.sameSite || 'lax'
-    });
+      domain: window.location.hostname === 'localhost' ? 'localhost' : undefined,
+      expires: 7, // 7 days
+      ...options,
+    };
+
+    console.log('Setting cookie:', { name, value, options: cookieOptions });
+    
+    try {
+      Cookies.set(name, value, cookieOptions);
+      console.log('Cookie set successfully');
+      console.log('Current cookies:', Cookies.get());
+    } catch (error) {
+      console.error('Error setting cookie:', error);
+    }
   }
 
   getCookie(name: string): string | undefined {
-    return Cookies.get(name);
+    try {
+      const value = Cookies.get(name);
+      console.log('Getting cookie:', { name, value });
+      return value;
+    } catch (error) {
+      console.error('Error getting cookie:', error);
+      return undefined;
+    }
   }
 
   removeCookie(name: string, options?: CookieAttributes): void {
-    Cookies.remove(name, options);
+    const cookieOptions: CookieAttributes = {
+      path: '/',
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      domain: window.location.hostname === 'localhost' ? 'localhost' : undefined,
+      ...options,
+    };
+
+    try {
+      Cookies.remove(name, cookieOptions);
+      console.log('Cookie removed:', name);
+    } catch (error) {
+      console.error('Error removing cookie:', error);
+    }
   }
 
   clearAll(): void {
@@ -45,10 +78,15 @@ class SessionManager {
     this.cache.clear();
 
     // Clear all cookies
-    const cookies = Cookies.get();
-    Object.keys(cookies).forEach(cookieName => {
-      Cookies.remove(cookieName, { path: '/' });
-    });
+    try {
+      const cookies = Cookies.get();
+      Object.keys(cookies).forEach(cookieName => {
+        this.removeCookie(cookieName);
+      });
+      console.log('All cookies cleared');
+    } catch (error) {
+      console.error('Error clearing cookies:', error);
+    }
   }
 }
 

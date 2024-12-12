@@ -58,13 +58,24 @@ class AuthService {
 
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
-      console.log('Attempting login...');
+      console.log('Attempting login with URL:', api.defaults.baseURL);
       const response = await api.post<LoginResponse>('/users/auth/login/', {
         email,
         password,
+      }, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       
-      console.log('Login successful, setting tokens and user data');
+      console.log('Login response:', response.data);
+      
+      if (!response.data.access || !response.data.refresh) {
+        throw new Error('Invalid response: missing access or refresh tokens');
+      }
+
+      // Store tokens
       this.setTokens({
         access: response.data.access,
         refresh: response.data.refresh
@@ -73,17 +84,37 @@ class AuthService {
       // Store user data
       this.setUserData(response.data.user);
       
-      // Set auth status cookie
+      // Set auth cookies with explicit options
       sessionManager.setCookie('auth_status', 'authenticated', {
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
+        sameSite: 'lax',
+        expires: 7 // 7 days
       });
-      
+
+      if (response.data.user && response.data.user.id) {
+        sessionManager.setCookie('user_id', response.data.user.id.toString(), {
+          path: '/',
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          expires: 7 // 7 days
+        });
+      }
+
+      // Store tokens in localStorage for persistence
+      localStorage.setItem('access_token', response.data.access);
+      if (response.data.refresh) {
+        localStorage.setItem('refresh_token', response.data.refresh);
+      }
+
       return response.data;
-    } catch (error) {
-      console.error('Login failed:', error);
-      this.handleError(error);
+    } catch (error: any) {
+      console.error('Login error:', error.response?.data || error);
+      const errorMessage = error.response?.data?.detail || 
+                         error.response?.data?.message ||
+                         error.message || 
+                         'Login failed. Please try again.';
+      throw new Error(errorMessage);
     }
   }
 
@@ -154,27 +185,21 @@ class AuthService {
   }
 
   setTokens(tokens: AuthTokens): void {
-    console.log('Setting auth tokens...');
-    storage.setItem(TOKEN_KEY, tokens);
-    api.defaults.headers.common['Authorization'] = `Bearer ${tokens.access}`;
-  }
-
-  setUserData(user: User): void {
-    console.log('Setting user data...');
-    sessionManager.setCache(USER_KEY, user, SESSION_CACHE_TIME);
-    sessionManager.setCookie('user_id', user.id.toString(), {
-      path: '/',
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
-    });
+    storage.setItem(TOKEN_KEY, JSON.stringify(tokens));
   }
 
   getTokens(): AuthTokens | null {
-    return storage.getItem<AuthTokens>(TOKEN_KEY);
+    const tokens = storage.getItem(TOKEN_KEY);
+    return tokens ? JSON.parse(tokens) : null;
+  }
+
+  setUserData(user: User): void {
+    storage.setItem(USER_KEY, JSON.stringify(user));
   }
 
   getUserData(): User | null {
-    return sessionManager.getCache<User>(USER_KEY);
+    const user = storage.getItem(USER_KEY);
+    return user ? JSON.parse(user) : null;
   }
 
   isAuthenticated(): boolean {

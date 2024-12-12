@@ -19,10 +19,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Handling navigation:', { pathname, isAuthenticated });
     
     const isLoginPage = pathname === '/login';
-    const isPublicRoute = publicRoutes.includes(pathname);
-    const isProtectedRoute = protectedRoutes.some(route => 
+    const isPublicRoute = pathname ? publicRoutes.includes(pathname) : false;
+    const isProtectedRoute = pathname ? protectedRoutes.some(route => 
       pathname === route || pathname.startsWith(`${route}/`)
-    );
+    ) : false;
 
     if (isAuthenticated) {
       console.log('User is authenticated');
@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('User is not authenticated');
       if (isProtectedRoute) {
         console.log('Redirecting to login from protected route');
-        const returnUrl = encodeURIComponent(pathname);
+        const returnUrl = encodeURIComponent(pathname || '/');
         window.location.replace(`/login?returnUrl=${returnUrl}`);
       }
     }
@@ -49,8 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await checkAuth();
         }
       } catch (error) {
-        console.error('Failed to restore auth session:', error);
-        authService.clearAuth();
+        console.error('Auth initialization error:', error);
       } finally {
         setIsLoading(false);
       }
@@ -61,21 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading) {
-      console.log('Auth state changed, handling navigation...', { 
-        isAuthenticated, 
-        pathname,
-        isLoading 
-      });
       handleNavigation();
     }
-  }, [isAuthenticated, pathname, isLoading]);
+  }, [isLoading, isAuthenticated, pathname]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader className="w-12 h-12 text-gold" />
-      </div>
-    );
+    return <Loader />;
   }
 
   return <>{children}</>;

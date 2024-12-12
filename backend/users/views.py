@@ -34,6 +34,8 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 import logging
 logger = logging.getLogger(__name__)
 
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 User = get_user_model()
 
@@ -424,12 +426,21 @@ class AuthViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @swagger_auto_schema(
+        operation_description="Get CSRF token for authentication",
+        responses={200: "CSRF token set in cookie"}
+    )
     @method_decorator(ensure_csrf_cookie)
     @action(detail=False, methods=['get'])
     def csrf(self, request):
         """Get CSRF token."""
-        return Response({'detail': 'CSRF cookie set'})
+        return get_csrf_token(request)
 
+    @swagger_auto_schema(
+        operation_description="Register a new user",
+        request_body=UserRegistrationSerializer,
+        responses={201: UserSerializer}
+    )
     @action(detail=False, methods=['post'])
     def register(self, request):
         """Register a new user."""
@@ -450,28 +461,90 @@ class AuthViewSet(viewsets.ViewSet):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        operation_description="Authenticate user and return tokens",
+        request_body=UserLoginSerializer,
+        responses={
+            200: openapi.Response(
+                description="Login successful",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'user': openapi.Schema(type=openapi.TYPE_OBJECT, description='User details'),
+                        'profile': openapi.Schema(type=openapi.TYPE_OBJECT, description='User profile details'),
+                        'access': openapi.Schema(type=openapi.TYPE_STRING, description='Access token'),
+                        'refresh': openapi.Schema(type=openapi.TYPE_STRING, description='Refresh token'),
+                    }
+                )
+            ),
+            400: 'Invalid credentials',
+            500: 'Login failed'
+        },
+        operation_summary="User login"
+    )
     @action(detail=False, methods=['post'])
     def login(self, request):
-        """Authenticate a user and return tokens."""
-        serializer = UserLoginSerializer(data=request.data, context={'request': request})
-        if serializer.is_valid():
-            user = serializer.validated_data['user']
-            # Specify the authentication backend
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            refresh = RefreshToken.for_user(user)
-            
-            profile = Profile.objects.get_or_create(user=user)[0]
-            
+        """
+        Authenticate a user and return tokens.
+        
+        This endpoint only accepts POST requests with email and password in the request body.
+        Do not attempt to access this endpoint with GET requests.
+        """
+        try:
+            serializer = UserLoginSerializer(data=request.data, context={'request': request})
+            if serializer.is_valid():
+                user = serializer.validated_data['user']
+                
+                # Create tokens
+                refresh = RefreshToken.for_user(user)
+                access_token = str(refresh.access_token)
+                
+                # Get or create profile
+                profile = Profile.objects.get_or_create(user=user)[0]
+                
+                # Create response data
+                response_data = {
+                    'user': UserSerializer(user).data,
+                    'profile': ProfileSerializer(profile).data,
+                    'access': access_token,
+                    'refresh': str(refresh),
+                }
+                
+                # Create response with tokens
+                response = Response(response_data)
+                
+                # Set cookie headers
+                response.set_cookie(
+                    'auth_status',
+                    'authenticated',
+                    max_age=7 * 24 * 60 * 60,  # 7 days
+                    httponly=True,
+                    samesite='Lax',
+                    secure=request.is_secure()
+                )
+                
+                response.set_cookie(
+                    'user_id',
+                    str(user.id),
+                    max_age=7 * 24 * 60 * 60,  # 7 days
+                    httponly=True,
+                    samesite='Lax',
+                    secure=request.is_secure()
+                )
+                
+                return response
+                
             return Response({
-                'user': UserSerializer(user).data,
-                'profile': ProfileSerializer(profile).data,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
-        return Response({
-            'error': 'Invalid credentials',
-            'details': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+                'error': 'Invalid credentials',
+                'details': serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+        except Exception as e:
+            logger.error(f"Login error: {str(e)}")
+            return Response({
+                'error': 'Login failed',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=['post'])
     def logout(self, request):

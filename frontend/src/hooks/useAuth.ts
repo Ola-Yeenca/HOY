@@ -65,9 +65,14 @@ const useAuthStore = create<AuthState & AuthActions>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
+          console.log('Attempting login with email:', email);
           const response = await authService.login(email, password);
-          console.log('Login successful, updating auth state');
+          console.log('Login response:', response);
           
+          if (!response.user || !response.access) {
+            throw new Error('Invalid login response');
+          }
+
           // Update auth state
           set({
             user: response.user,
@@ -77,28 +82,43 @@ const useAuthStore = create<AuthState & AuthActions>()(
             error: null
           });
 
-          // Set auth cookies
+          // Set auth cookies with explicit options
           sessionManager.setCookie('auth_status', 'authenticated', {
             path: '/',
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax'
+            sameSite: 'lax',
+            expires: 7, // 7 days
           });
+
           sessionManager.setCookie('user_id', response.user.id.toString(), {
             path: '/',
             secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax'
+            sameSite: 'lax',
+            expires: 7, // 7 days
           });
+
+          // Store tokens in localStorage for persistence
+          localStorage.setItem('access_token', response.access);
+          if (response.refresh) {
+            localStorage.setItem('refresh_token', response.refresh);
+          }
 
           return response;
         } catch (error: any) {
-          console.error('Login failed:', error);
+          console.error('Login error:', error);
+          const errorMessage = error?.response?.data?.detail || 
+                             error?.response?.data?.message ||
+                             error?.message || 
+                             'Login failed. Please try again.';
+          
           set({ 
             user: null,
             profile: null,
             isAuthenticated: false,
             isLoading: false,
-            error: error.message 
+            error: errorMessage
           });
+          
           throw error;
         }
       },

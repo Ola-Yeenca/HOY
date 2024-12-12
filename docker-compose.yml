@@ -7,10 +7,14 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/hoy_db
       - DEBUG=1
       - DJANGO_SETTINGS_MODULE=hoy.settings
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,frontend
       - SECRET_KEY=${DJANGO_SECRET_KEY:-your-secret-key-here}
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,https://localhost:3000,https://127.0.0.1:3000}
-      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000,https://localhost:3000,https://127.0.0.1:3000}
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000
+      - CSRF_TRUSTED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:3000
+      - CSRF_COOKIE_DOMAIN=localhost
+      - SESSION_COOKIE_DOMAIN=localhost
+      - CSRF_COOKIE_SECURE=false
+      - SESSION_COOKIE_SECURE=false
     depends_on:
       db:
         condition: service_healthy
@@ -23,16 +27,9 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
       - NEXT_PUBLIC_API_URL=http://localhost:8000/api
-      - NEXT_PUBLIC_API_DOCKER_URL=http://backend:8000/api
-      - NEXT_PUBLIC_API_LOCAL_URL=http://localhost:8000/api
-      - NEXT_PUBLIC_USE_HTTPS=false
-      - WATCHPACK_POLLING=true
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:8000
+      - NODE_ENV=development
     depends_on:
       - backend
     restart: unless-stopped
