@@ -1,7 +1,7 @@
 import { User, AuthTokens, LoginResponse, Profile, RegisterData } from '@/types/auth';
 import api from './api';
 import { SafeStorage } from '@/utils/safeStorage';
-import { sessionManager } from '@/utils/sessionManager';
+import { sessionManager } from '@/services/sessionManager';
 
 const storage = new SafeStorage();
 const TOKEN_KEY = 'auth_tokens';
@@ -144,10 +144,10 @@ class AuthService {
     // Clear tokens
     storage.removeItem(TOKEN_KEY);
     
-    // Clear user data
+    // Clear session data
     sessionManager.removeCache(USER_KEY);
-    sessionManager.removeCookie('user_id');
     sessionManager.removeCookie('auth_status');
+    sessionManager.removeCookie('user_id');
     
     // Clear API headers
     delete api.defaults.headers.common['Authorization'];

@@ -24,10 +24,15 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=${API_URL:-http://localhost:8000}
-      - NEXT_PUBLIC_API_DOCKER_URL=http://backend:8000
-      - NEXT_PUBLIC_API_LOCAL_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+      - NEXT_PUBLIC_API_DOCKER_URL=http://backend:8000/api
+      - NEXT_PUBLIC_API_LOCAL_URL=http://localhost:8000/api
       - NEXT_PUBLIC_USE_HTTPS=false
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
     depends_on:
       - backend
     restart: unless-stopped
