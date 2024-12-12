@@ -110,7 +110,7 @@ hoy-platform/
 
 ```bash
 # Clone repository
-git clone https://github.com/hoy/event-platform.git
+git clone [https://github.com/Ola-Yeenca/HOY.git]
 
 # Frontend setup
 cd frontend
