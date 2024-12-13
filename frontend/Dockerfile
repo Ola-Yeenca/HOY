@@ -1,36 +1,27 @@
-# Build stage
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-
-# Install dependencies
-COPY package*.json ./
-RUN npm install --legacy-peer-deps
-
-# Copy project files
-COPY . .
-
-# Clear any existing .next directory
-RUN rm -rf .next
-
-# Build the application
-RUN npm run build
-
-# Development stage
+# Development stage only (since we're focusing on dev mode first)
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy dependencies and build files from builder stage
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/next.config.js ./
+# Install dependencies first (layer caching)
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
+
+# Copy the source code
+COPY . .
+
+# Verify and create necessary directories
+RUN mkdir -p /app/src/app && \
+    echo "Verifying project structure:" && \
+    ls -la /app/src/app
+
+# Development-specific settings
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV WATCHPACK_POLLING=true
 
 # Expose port
 EXPOSE 3000
 
-# Start the development server with the build files
-ENV NODE_ENV=development
-CMD ["npm", "run", "dev"]
+# Start in development mode with additional debugging
+CMD ["sh", "-c", "echo 'Project structure:' && ls -R /app/src && npm run dev -- -H 0.0.0.0"]

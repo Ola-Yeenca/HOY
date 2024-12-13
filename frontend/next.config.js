@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
@@ -16,10 +18,16 @@ const nextConfig = {
       },
     ],
   },
-  reactStrictMode: true,
-  output: 'standalone',
-  experimental: {
-    serverActions: true,
+  // Development-specific settings
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      // Improve hot reloading in development
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      }
+    }
+    return config
   },
 }
 

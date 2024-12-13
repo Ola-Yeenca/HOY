@@ -14,18 +14,22 @@ const Footer = dynamic(() => import('./Footer').then(mod => mod.Footer), {
   loading: () => <Loader className="w-8 h-8 text-gold" />
 });
 
-export function ClientLayout({ children }: { children: React.ReactNode }) {
+interface ClientLayoutProps {
+  children: React.ReactNode;
+}
+
+const ClientLayout = ({ children }: ClientLayoutProps) => {
   return (
     <Layout>
       <Suspense fallback={<Loader className="w-8 h-8 text-gold" />}>
         <Navigation />
       </Suspense>
-      <main className="min-h-screen pt-16">
-        {children}
-      </main>
+      <main className="flex-grow">{children}</main>
       <Suspense fallback={<Loader className="w-8 h-8 text-gold" />}>
         <Footer />
       </Suspense>
     </Layout>
   );
-}
+};
+
+export default ClientLayout;

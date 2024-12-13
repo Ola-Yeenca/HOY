@@ -8,7 +8,7 @@ import { Loader } from '@/components/ui/loader';
 import { ToastProvider } from '@/components/ui/toast-provider';
 
 // Dynamically import heavy components
-const ClientLayout = dynamic(() => import('@/components/layout/ClientLayout').then(mod => mod.ClientLayout), {
+const ClientLayout = dynamic(() => import('@/components/layout/ClientLayout'), {
   loading: () => (
     <div className="min-h-screen flex items-center justify-center">
       <Loader className="w-12 h-12 text-gold" />

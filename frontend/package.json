@@ -34,7 +34,7 @@
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.468.0",
     "mapbox-gl": "^3.8.0",
-    "next": "^15.0.3",
+    "next": "14.0.4",
     "next-auth": "^4.24.10",
     "react": "18.2.0",
     "react-day-picker": "^9.4.1",
@@ -52,7 +52,7 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
-    "@next/eslint-plugin-next": "^15.0.3",
+    "@next/eslint-plugin-next": "^14.0.4",
     "@types/node": "^22.10.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.2.18",
@@ -60,7 +60,7 @@
     "@typescript-eslint/parser": "^8.16.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
-    "eslint-config-next": "^15.0.3",
+    "eslint-config-next": "^14.0.4",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-prettier": "^5.2.1",
