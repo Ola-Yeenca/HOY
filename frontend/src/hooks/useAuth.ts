@@ -1,232 +1,121 @@
-import { User } from '@/types/user';
+import { useState, useEffect, useCallback } from 'react';
+import api from '@/services/api';
 import authService from '@/services/authService';
-import sessionManager from '@/services/sessionManager';
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { useRouter } from 'next/navigation';
+
+interface User {
+  id: number;
+  email: string;
+  name?: string;
+}
 
 interface AuthState {
   user: User | null;
-  profile: any | null;
-  error: string | null;
-  isLoading: boolean;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
-interface AuthActions {
-  register: (data: {
-    email: string;
-    password: string;
-    password_confirm: string;
-    first_name: string;
-    last_name: string;
-  }) => Promise<void>;
-  login: (email: string, password: string) => Promise<any>;
-  logout: () => Promise<void>;
-  checkAuth: () => Promise<any>;
-  clearError: () => void;
-}
+export default function useAuth() {
+  const router = useRouter();
+  const [authState, setAuthState] = useState<AuthState>({
+    user: null,
+    isAuthenticated: false,
+    isLoading: true,
+  });
 
-const useAuthStore = create<AuthState & AuthActions>()(
-  persist(
-    (set, get) => ({
-      user: null,
-      profile: null,
-      error: null,
-      isLoading: false,
-      isAuthenticated: false,
+  const checkAuthStatus = useCallback(async () => {
+    try {
+      const tokens = authService.getTokens();
+      if (!tokens?.access) {
+        setAuthState({ user: null, isAuthenticated: false, isLoading: false });
+        return;
+      }
 
-      register: async (data) => {
-        if (!get()) {
-          set({ isLoading: true, error: null });
-          try {
-            const response = await authService.register({
-              email: data.email,
-              password: data.password,
-              password_confirm: data.password_confirm,
-              firstName: data.first_name,
-              lastName: data.last_name
-            });
-            console.log('Register response:', response);
-            set({
-              user: response.user,
-              profile: response.profile,
-              isAuthenticated: true,
-              isLoading: false,
-            });
-            console.log('Auth state updated:', { user: response.user, isAuthenticated: true });
-          } catch (error: any) {
-            const message = error.message || 'Registration failed';
-            set({ error: message, isLoading: false });
-            throw error;
-          }
-        }
-      },
-
-      login: async (email: string, password: string) => {
-        set({ isLoading: true, error: null });
-        try {
-          console.log('Attempting login with email:', email);
-          const response = await authService.login(email, password);
-          console.log('Login response:', response);
-          
-          if (!response.user || !response.access) {
-            throw new Error('Invalid login response');
-          }
-
-          // Update auth state
-          set({
-            user: response.user,
-            profile: response.profile,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null
-          });
-
-          // Set auth cookies with explicit options
-          sessionManager.setCookie('auth_status', 'authenticated', {
-            path: '/',
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            expires: 7, // 7 days
-          });
-
-          sessionManager.setCookie('user_id', response.user.id.toString(), {
-            path: '/',
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            expires: 7, // 7 days
-          });
-
-          // Store tokens in localStorage for persistence
-          localStorage.setItem('access_token', response.access);
-          if (response.refresh) {
-            localStorage.setItem('refresh_token', response.refresh);
-          }
-
-          return response;
-        } catch (error: any) {
-          console.error('Login error:', error);
-          const errorMessage = error?.response?.data?.detail || 
-                             error?.response?.data?.message ||
-                             error?.message || 
-                             'Login failed. Please try again.';
-          
-          set({ 
-            user: null,
-            profile: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: errorMessage
-          });
-          
-          throw error;
-        }
-      },
-
-      logout: async () => {
-        set({ isLoading: true });
-        try {
-          await authService.logout();
-          console.log('Logout successful, clearing auth state');
-          
-          // Clear auth state
-          set({
-            user: null,
-            profile: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: null
-          });
-
-          // Clear auth cookies
-          sessionManager.removeCookie('auth_status');
-          sessionManager.removeCookie('user_id');
-
-          // Redirect to login
-          window.location.replace('/login');
-        } catch (error: any) {
-          console.error('Logout failed:', error);
-          set({ isLoading: false, error: error.message });
-          throw error;
-        }
-      },
-
-      checkAuth: async () => {
-        set({ isLoading: true });
-        try {
-          const response = await authService.checkAuth();
-          console.log('Auth check successful, updating state');
-          
-          // Update auth state
-          set({
-            user: response.user,
-            profile: response.profile,
-            isAuthenticated: true,
-            isLoading: false,
-            error: null
-          });
-
-          // Set auth cookies
-          sessionManager.setCookie('auth_status', 'authenticated', {
-            path: '/',
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax'
-          });
-          sessionManager.setCookie('user_id', response.user.id.toString(), {
-            path: '/',
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax'
-          });
-
-          return response;
-        } catch (error: any) {
-          console.error('Auth check failed:', error);
-          set({
-            user: null,
-            profile: null,
-            isAuthenticated: false,
-            isLoading: false,
-            error: error.message
-          });
-
-          // Clear auth cookies
-          sessionManager.removeCookie('auth_status');
-          sessionManager.removeCookie('user_id');
-
-          throw error;
-        }
-      },
-
-      clearError: () => {
-        set({ error: null });
-      },
-    }),
-    {
-      name: 'auth-storage',
-      partialize: (state) => ({
-        user: state.user,
-        profile: state.profile,
-        isAuthenticated: state.isAuthenticated,
-      }),
+      const response = await api.get('/users/me/');
+      const userData = response.data;
+      
+      setAuthState({
+        user: userData,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      setAuthState({ user: null, isAuthenticated: false, isLoading: false });
     }
-  )
-);
+  }, []);
 
-// React hook wrapper
-export function useAuth() {
-  const state = useAuthStore();
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  const login = async (email: string, password: string) => {
+    try {
+      console.log('Attempting login with:', { email });
+      const response = await api.post('/users/auth/login/', { email, password });
+      console.log('Login response:', response.data);
+
+      const { access, refresh, user } = response.data;
+      authService.setTokens({ access, refresh });
+
+      setAuthState({
+        user,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Login error:', error.response?.data || error);
+      throw error;
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await api.post('/users/auth/logout/');
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      authService.logout();
+      setAuthState({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+      router.push('/login');
+    }
+  };
+
+  const register = async (email: string, password: string, name: string) => {
+    try {
+      const response = await api.post('/users/auth/register/', {
+        email,
+        password,
+        name,
+      });
+      
+      const { access, refresh, user } = response.data;
+      authService.setTokens({ access, refresh });
+
+      setAuthState({
+        user,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    }
+  };
+
   return {
-    user: state.user,
-    profile: state.profile,
-    error: state.error,
-    isLoading: state.isLoading,
-    isAuthenticated: state.isAuthenticated,
-    register: state.register,
-    login: state.login,
-    logout: state.logout,
-    checkAuth: state.checkAuth,
-    clearError: state.clearError,
+    ...authState,
+    login,
+    logout,
+    register,
+    checkAuthStatus,
   };
 }
-
-export default useAuth;

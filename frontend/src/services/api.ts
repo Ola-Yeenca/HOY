@@ -19,11 +19,8 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest',
     'Accept': 'application/json',
   },
-  xsrfCookieName: 'csrftoken',
-  xsrfHeaderName: 'X-CSRFToken',
 });
 
 // Request interceptor
@@ -31,11 +28,22 @@ api.interceptors.request.use(
   async (config) => {
     console.log('Request URL:', config.url);
     console.log('Request Method:', config.method);
+    console.log('Request Headers:', config.headers);
     
     const tokens = authService.getTokens();
     if (tokens?.access) {
       config.headers.Authorization = `Bearer ${tokens.access}`;
     }
+
+    // Add CSRF token if available
+    const csrfToken = document.cookie.split('; ')
+      .find(row => row.startsWith('csrftoken='))
+      ?.split('=')[1];
+    
+    if (csrfToken) {
+      config.headers['X-CSRFToken'] = csrfToken;
+    }
+
     return config;
   },
   (error) => {
@@ -48,39 +56,31 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => {
     console.log('Response status:', response.status);
+    console.log('Response data:', response.data);
     return response;
   },
   async (error) => {
-    console.error('Response error:', error.response?.data || error);
+    console.error('Response error:', error);
+    console.error('Response error data:', error.response?.data);
     
-    const originalRequest = error.config;
-
-    // Check if error is 401 and we haven't already tried to refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
+    if (error.response?.status === 401) {
+      // Try to refresh the token
       try {
-        // Only try to refresh if we have a refresh token
-        const currentTokens = authService.getTokens();
-        if (currentTokens?.refresh) {
-          const tokens = await authService.refreshToken();
-          if (tokens?.access) {
-            // Update the original request with new token
-            originalRequest.headers.Authorization = `Bearer ${tokens.access}`;
-            // Retry the original request
-            return api(originalRequest);
-          }
+        await authService.refreshToken();
+        // Retry the original request
+        const config = error.config;
+        const tokens = authService.getTokens();
+        if (tokens?.access) {
+          config.headers.Authorization = `Bearer ${tokens.access}`;
         }
-        // If we don't have refresh token or refresh failed, clear auth and redirect
-        authService.clearAuth();
-        window.location.replace('/login');
+        return axios(config);
       } catch (refreshError) {
-        console.error('Token refresh failed:', refreshError);
-        authService.clearAuth();
-        window.location.replace('/login');
+        // If refresh fails, logout
+        authService.logout();
+        window.location.href = '/login';
+        return Promise.reject(error);
       }
     }
-
     return Promise.reject(error);
   }
 );

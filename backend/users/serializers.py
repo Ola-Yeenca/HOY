@@ -181,13 +181,15 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source='user.first_name', required=False)
     last_name = serializers.CharField(source='user.last_name', required=False)
     phone_number = serializers.CharField(required=False, allow_blank=True)
-
+    
     class Meta:
         model = Profile
-        fields = ('first_name', 'last_name', 'bio', 'birth_date', 'location',
-                 'favorite_genres', 'favorite_artists', 'instagram', 'twitter',
-                 'facebook', 'profile_privacy', 'email_notifications',
-                 'push_notifications', 'phone_number')
+        fields = (
+            'first_name', 'last_name', 'bio', 'birth_date', 'location',
+            'favorite_genres', 'favorite_artists', 'instagram', 'twitter',
+            'facebook', 'show_email', 'show_location', 'show_birth_date',
+            'show_social_links', 'show_genres', 'show_artists', 'phone_number'
+        )
 
     def validate_birth_date(self, value):
         # Validate that the user is at least 18 years old.
