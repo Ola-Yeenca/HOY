@@ -1,4 +1,4 @@
-# Development stage only (since we're focusing on dev mode first)
+# Development stage
 FROM node:18-alpine
 
 WORKDIR /app
@@ -7,13 +7,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --legacy-peer-deps
 
-# Copy the source code
-COPY . .
-
-# Verify and create necessary directories
-RUN mkdir -p /app/src/app && \
-    echo "Verifying project structure:" && \
-    ls -la /app/src/app
+# Copy only necessary files
+COPY tsconfig*.json ./
+COPY next.config.js ./
+COPY public ./public
+COPY src ./src
 
 # Development-specific settings
 ENV NODE_ENV=development
@@ -23,5 +21,5 @@ ENV WATCHPACK_POLLING=true
 # Expose port
 EXPOSE 3000
 
-# Start in development mode with additional debugging
-CMD ["sh", "-c", "echo 'Project structure:' && ls -R /app/src && npm run dev -- -H 0.0.0.0"]
+# Start development server with optimized settings
+CMD ["npm", "run", "dev", "--", "--turbo"]

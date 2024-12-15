@@ -211,46 +211,40 @@ export const feedbackAdminApi = {
 
   // Survey Management
   getSurveys: async () => {
-    const response = await adminApi.get('/api/feedback/surveys/');
+    const response = await adminApi.get('/surveys');
     return response.data;
   },
 
-  getSurvey: async (id: string) => {
-    const response = await adminApi.get(`/api/feedback/surveys/${id}/`);
+  getSurveyById: async (id: string) => {
+    const response = await adminApi.get(`/surveys/${id}`);
     return response.data;
   },
 
-  createSurvey: async (surveyData: any) => {
-    const response = await adminApi.post('/api/feedback/surveys/', surveyData);
+  createSurvey: async (data: any) => {
+    const response = await adminApi.post('/surveys', data);
     return response.data;
   },
 
-  updateSurvey: async (id: string, surveyData: any) => {
-    const response = await adminApi.put(`/api/feedback/surveys/${id}/`, surveyData);
+  updateSurvey: async (id: string, data: any) => {
+    const response = await adminApi.put(`/surveys/${id}`, data);
     return response.data;
   },
 
   deleteSurvey: async (id: string) => {
-    await adminApi.delete(`/api/feedback/surveys/${id}/`);
-  },
-
-  getSurveyAnalytics: async (id: string) => {
-    const response = await adminApi.get(`/api/feedback/surveys/${id}/analytics/`);
+    const response = await adminApi.delete(`/surveys/${id}`);
     return response.data;
   },
 
-  // Survey Response Management
-  getSurveyResponses: async () => {
-    const response = await adminApi.get('/api/feedback/survey-responses/');
+  // Survey Responses
+  getSurveyResponses: async (surveyId: string) => {
+    const response = await adminApi.get(`/surveys/${surveyId}/responses`);
     return response.data;
   },
 
-  getSurveyResponse: async (id: string) => {
-    const response = await adminApi.get(`/api/feedback/survey-responses/${id}/`);
+  exportSurveyResponses: async (surveyId: string) => {
+    const response = await adminApi.get(`/surveys/${surveyId}/responses/export`, {
+      responseType: 'blob'
+    });
     return response.data;
   },
-
-  deleteSurveyResponse: async (id: string) => {
-    await adminApi.delete(`/api/feedback/survey-responses/${id}/`);
-  }
 };

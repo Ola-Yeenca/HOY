@@ -85,4 +85,29 @@ api.interceptors.response.use(
   }
 );
 
+export const authApi = {
+  sendVerificationEmail: async (email: string) => {
+    const response = await api.post('/auth/verify-email/', { email });
+    return response.data;
+  },
+
+  verifyEmail: async (token: string) => {
+    const response = await api.get(`/auth/verify-email/?token=${token}`);
+    return response.data;
+  },
+
+  sendPasswordResetEmail: async (email: string) => {
+    const response = await api.post('/auth/password-reset/', { email });
+    return response.data;
+  },
+
+  resetPassword: async (token: string, new_password: string) => {
+    const response = await api.post('/auth/password-reset/confirm/', {
+      token,
+      new_password,
+    });
+    return response.data;
+  },
+};
+
 export default api;

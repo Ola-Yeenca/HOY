@@ -49,7 +49,10 @@ export default function EventsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('date');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
@@ -90,27 +93,59 @@ export default function EventsPage() {
     }
   };
 
-  const filteredEvents = events.filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         event.location.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         event.location.address.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = selectedStatus === 'all' || event.status === selectedStatus;
-    return matchesSearch && matchesStatus;
-  });
+  const handleBulkAction = (action: string) => {
+    if (selectedEvents.length === 0) {
+      toast({
+        title: 'No events selected',
+        description: 'Please select events to perform this action',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
 
-  const getStatusBadge = (status: string) => {
-    const colorScheme = {
-      upcoming: 'green',
-      ongoing: 'blue',
-      completed: 'gray',
-    }[status] || 'gray';
-
-    return (
-      <Badge colorScheme={colorScheme}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
+    switch (action) {
+      case 'delete':
+        // Implement bulk delete
+        break;
+      case 'export':
+        // Implement export functionality
+        break;
+      default:
+        break;
+    }
   };
+
+  const eventStats = {
+    total: events.length,
+    upcoming: events.filter(e => e.status === 'upcoming').length,
+    ongoing: events.filter(e => e.status === 'ongoing').length,
+    completed: events.filter(e => e.status === 'completed').length,
+  };
+
+  const filteredEvents = events
+    .filter(event => {
+      if (filterStatus === 'all') return true;
+      return event.status === filterStatus;
+    })
+    .filter(event =>
+      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      event.location.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      const order = sortOrder === 'asc' ? 1 : -1;
+      switch (sortBy) {
+        case 'title':
+          return order * a.title.localeCompare(b.title);
+        case 'date':
+          return order * (new Date(a.date).getTime() - new Date(b.date).getTime());
+        case 'attendees':
+          return order * (a.attendees - b.attendees);
+        default:
+          return 0;
+      }
+    });
 
   return (
     <Box p={4}>
@@ -134,8 +169,8 @@ export default function EventsPage() {
           maxW="300px"
         />
         <Select
-          value={selectedStatus}
-          onChange={(e) => setSelectedStatus(e.target.value)}
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
           maxW="200px"
         >
           <option value="all">All Status</option>
@@ -143,7 +178,54 @@ export default function EventsPage() {
           <option value="ongoing">Ongoing</option>
           <option value="completed">Completed</option>
         </Select>
+        <Select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          maxW="200px"
+        >
+          <option value="date">Sort by Date</option>
+          <option value="title">Sort by Title</option>
+          <option value="attendees">Sort by Attendees</option>
+        </Select>
       </Flex>
+
+      <Flex gap={4} mb={6} flexWrap="wrap">
+        <Box p={4} bg="coffee-bean" borderRadius="xl" borderWidth={1} borderColor="gold.200">
+          <Text fontSize="sm" color="white-plum">Total Events</Text>
+          <Heading size="lg" color="gold">{eventStats.total}</Heading>
+        </Box>
+        <Box p={4} bg="coffee-bean" borderRadius="xl" borderWidth={1} borderColor="gold.200">
+          <Text fontSize="sm" color="white-plum">Upcoming</Text>
+          <Heading size="lg" color="gold">{eventStats.upcoming}</Heading>
+        </Box>
+        <Box p={4} bg="coffee-bean" borderRadius="xl" borderWidth={1} borderColor="gold.200">
+          <Text fontSize="sm" color="white-plum">Ongoing</Text>
+          <Heading size="lg" color="gold">{eventStats.ongoing}</Heading>
+        </Box>
+        <Box p={4} bg="coffee-bean" borderRadius="xl" borderWidth={1} borderColor="gold.200">
+          <Text fontSize="sm" color="white-plum">Completed</Text>
+          <Heading size="lg" color="gold">{eventStats.completed}</Heading>
+        </Box>
+      </Flex>
+
+      {selectedEvents.length > 0 && (
+        <Flex gap={4} mb={6}>
+          <Button
+            colorScheme="red"
+            size="sm"
+            onClick={() => handleBulkAction('delete')}
+          >
+            Delete Selected
+          </Button>
+          <Button
+            colorScheme="blue"
+            size="sm"
+            onClick={() => handleBulkAction('export')}
+          >
+            Export Selected
+          </Button>
+        </Flex>
+      )}
 
       {loading ? (
         <Text>Loading events...</Text>
@@ -153,6 +235,19 @@ export default function EventsPage() {
         <Table variant="simple">
           <Thead>
             <Tr>
+              <Th>
+                <input
+                  type="checkbox"
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedEvents(events.map(event => event.id));
+                    } else {
+                      setSelectedEvents([]);
+                    }
+                  }}
+                />
+              </Th>
+              <Th>Image</Th>
               <Th>Title</Th>
               <Th>Date</Th>
               <Th>Location</Th>
@@ -164,16 +259,49 @@ export default function EventsPage() {
           <Tbody>
             {filteredEvents.map((event) => (
               <Tr key={event.id}>
+                <Td>
+                  <input
+                    type="checkbox"
+                    checked={selectedEvents.includes(event.id)}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedEvents([...selectedEvents, event.id]);
+                      } else {
+                        setSelectedEvents(selectedEvents.filter(id => id !== event.id));
+                      }
+                    }}
+                  />
+                </Td>
+                <Td>
+                  <Image
+                    src={event.imageUrl}
+                    alt={event.title}
+                    boxSize="50px"
+                    objectFit="cover"
+                    borderRadius="md"
+                  />
+                </Td>
                 <Td>{event.title}</Td>
                 <Td>{new Date(event.date).toLocaleDateString()}</Td>
                 <Td>{event.location.name}</Td>
-                <Td>{getStatusBadge(event.status)}</Td>
+                <Td>
+                  <Badge
+                    colorScheme={
+                      event.status === 'upcoming'
+                        ? 'green'
+                        : event.status === 'ongoing'
+                        ? 'blue'
+                        : 'gray'
+                    }
+                  >
+                    {event.status}
+                  </Badge>
+                </Td>
                 <Td>{event.attendees}</Td>
                 <Td>
                   <Flex gap={2}>
                     <Button
                       size="sm"
-                      colorScheme="blue"
                       leftIcon={<FaEye />}
                       onClick={() => {
                         setSelectedEvent(event);
@@ -186,7 +314,6 @@ export default function EventsPage() {
                       <Button
                         as="a"
                         size="sm"
-                        colorScheme="green"
                         leftIcon={<FaEdit />}
                       >
                         Edit
@@ -194,8 +321,8 @@ export default function EventsPage() {
                     </Link>
                     <Button
                       size="sm"
-                      colorScheme="red"
                       leftIcon={<FaTrash />}
+                      colorScheme="red"
                       onClick={() => handleDeleteEvent(event.id)}
                     >
                       Delete
@@ -216,41 +343,13 @@ export default function EventsPage() {
 
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>{selectedEvent?.title}</ModalHeader>
+        <ModalContent bg="coffee-bean">
+          <ModalHeader color="gold">
+            {selectedEvent ? 'Edit Event' : 'Create New Event'}
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            {selectedEvent && (
-              <Box>
-                {selectedEvent.imageUrl && (
-                  <Box position="relative" h="200px" mb={4}>
-                    <Image
-                      width={500}
-                      height={500}
-                      src={selectedEvent.imageUrl}
-                      alt={selectedEvent.title}
-                      objectFit="cover"
-                    />
-                  </Box>
-                )}
-                <Text mb={2}>
-                  <strong>Date:</strong> {new Date(selectedEvent.date).toLocaleString()}
-                </Text>
-                <Text mb={2}>
-                  <strong>Location:</strong> {selectedEvent.location.name} ({selectedEvent.location.address})
-                </Text>
-                <Text mb={2}>
-                  <strong>Status:</strong> {getStatusBadge(selectedEvent.status)}
-                </Text>
-                <Text mb={2}>
-                  <strong>Attendees:</strong> {selectedEvent.attendees}
-                </Text>
-                <Text mb={2}>
-                  <strong>Description:</strong>
-                </Text>
-                <Text>{selectedEvent.description}</Text>
-              </Box>
-            )}
+            {/* Add your event form here */}
           </ModalBody>
         </ModalContent>
       </Modal>

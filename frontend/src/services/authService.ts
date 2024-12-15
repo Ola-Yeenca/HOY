@@ -170,6 +170,39 @@ class AuthService {
     }
   }
 
+  async updateProfilePicture(file: File): Promise<Profile> {
+    try {
+      const formData = new FormData();
+      formData.append('profile_picture', file);
+
+      const response = await api.patch<Profile>(
+        '/users/profile/picture/',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+
+      // Update the stored user data with the new profile picture
+      const currentUser = this.getUserData();
+      if (currentUser) {
+        this.setUserData({
+          ...currentUser,
+          profile: {
+            ...currentUser.profile,
+            profile_picture: response.data.profile_picture
+          }
+        });
+      }
+
+      return response.data;
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+
   clearAuth(): void {
     console.log('Clearing auth state...');
     // Clear tokens

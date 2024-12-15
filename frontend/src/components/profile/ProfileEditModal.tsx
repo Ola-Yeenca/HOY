@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaSpinner } from 'react-icons/fa';
+import { FaSpinner, FaCamera } from 'react-icons/fa';
 import { Profile } from '@/types/auth';
+import authService from '@/services/authService';
+import Image from 'next/image';
 
 interface ProfileEditModalProps {
   profile: Profile;
@@ -16,6 +18,8 @@ export default function ProfileEditModal({
   onSave,
   isLoading,
 }: ProfileEditModalProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingPicture, setUploadingPicture] = useState(false);
   const [formData, setFormData] = useState({
     bio: profile.bio || '',
     location: profile.location || '',
@@ -28,6 +32,26 @@ export default function ProfileEditModal({
     email_notifications: profile.email_notifications,
     push_notifications: profile.push_notifications,
   });
+
+  const handlePictureClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePictureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingPicture(true);
+      await authService.updateProfilePicture(file);
+      // The profile picture will be updated in the UI through the user context
+    } catch (error) {
+      console.error('Failed to upload profile picture:', error);
+      // Handle error (show toast notification, etc.)
+    } finally {
+      setUploadingPicture(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,10 +75,41 @@ export default function ProfileEditModal({
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="bg-jet-black rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-coffee-bean rounded-xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
       >
         <h2 className="text-2xl font-bold text-gold mb-6">Edit Profile</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* Profile Picture Section */}
+        <div className="flex flex-col items-center mb-6">
+          <div className="relative w-32 h-32 mb-4">
+            <Image
+              src={profile.profile_picture || '/images/default-avatar.png'}
+              alt="Profile"
+              fill
+              className="rounded-full object-cover"
+            />
+            <button
+              onClick={handlePictureClick}
+              disabled={uploadingPicture}
+              className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 hover:opacity-100 transition-opacity"
+            >
+              {uploadingPicture ? (
+                <FaSpinner className="animate-spin text-2xl text-gold" />
+              ) : (
+                <FaCamera className="text-2xl text-gold" />
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePictureChange}
+              className="hidden"
+            />
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Bio */}
           <div>
             <label className="block text-chalk mb-2">Bio</label>

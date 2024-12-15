@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.conf import settings
@@ -10,12 +11,26 @@ from users.models import Profile
 
 User = get_user_model()
 
+class EmailVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            user = User.objects.get(email=value)
+            if user.is_verified:
+                raise serializers.ValidationError("Email is already verified.")
+        except User.DoesNotExist:
+            raise serializers.ValidationError("No user found with this email address.")
+        return value
+
 class PasswordResetSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
     def validate_email(self, value):
         try:
             user = User.objects.get(email=value)
+            if not user.is_verified:
+                raise serializers.ValidationError("Please verify your email address first.")
         except User.DoesNotExist:
             raise serializers.ValidationError("No user found with this email address.")
         return value
@@ -52,32 +67,42 @@ class PasswordResetSerializer(serializers.Serializer):
 class PasswordResetConfirmSerializer(serializers.Serializer):
     uid = serializers.CharField()
     token = serializers.CharField()
-    password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
 
-    def validate(self, attrs):
+    def validate_uid(self, value):
         try:
-            uid = force_str(urlsafe_base64_decode(attrs['uid']))
+            uid = force_str(urlsafe_base64_decode(value))
             user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             raise serializers.ValidationError({"uid": "Invalid user ID"})
+        return value
 
-        if not default_token_generator.check_token(user, attrs['token']):
+    def validate_token(self, value):
+        try:
+            user = User.objects.get(pk=self.initial_data['uid'])
+        except User.DoesNotExist:
+            raise serializers.ValidationError({"token": "Invalid user ID"})
+
+        if not default_token_generator.check_token(user, value):
             raise serializers.ValidationError({"token": "Invalid or expired token"})
+        return value
 
-        attrs['user'] = user
-        return attrs
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
 
     def save(self):
-        password = self.validated_data["password"]
-        user = self.validated_data["user"]
-        user.set_password(password)
+        new_password = self.validated_data["new_password"]
+        user = User.objects.get(pk=self.initial_data['uid'])
+        user.set_password(new_password)
         user.save()
         return user
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'email', 'first_name', 'last_name', 'is_email_verified')
+        fields = ('id', 'email', 'first_name', 'last_name', 'is_verified')
+        read_only_fields = ('is_verified',)
 
 class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
