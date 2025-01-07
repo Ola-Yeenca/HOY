@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import useAuth from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';

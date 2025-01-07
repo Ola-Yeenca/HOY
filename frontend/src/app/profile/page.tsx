@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import useAuth from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { FaSpinner, FaEdit, FaCamera, FaMapMarkerAlt, FaEnvelope, FaTrash, FaMusic } from 'react-icons/fa';

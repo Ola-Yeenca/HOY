@@ -53,6 +53,23 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_email_verified = models.BooleanField(default=False)
     email_verification_token = models.CharField(max_length=255, blank=True, null=True)
     
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name=_('groups'),
+        blank=True,
+        help_text=_('The groups this user belongs to. A user will get all permissions granted to each of their groups.'),
+        related_name='users_user_set',
+        related_query_name='users_user'
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name=_('user permissions'),
+        blank=True,
+        help_text=_('Specific permissions for this user.'),
+        related_name='users_permission_set',
+        related_query_name='users_permission'
+    )
+
     objects = CustomUserManager()
 
     USERNAME_FIELD = 'email'

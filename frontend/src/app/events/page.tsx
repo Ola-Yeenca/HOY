@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import useAuth from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { BentoGrid, BentoGridItem } from '@/components/ui/design-system/BentoGrid';
 import { ThreeDCard } from '@/components/ui/design-system/3DCard';
 import { AnimatedText } from '@/components/ui/design-system/AnimatedText';

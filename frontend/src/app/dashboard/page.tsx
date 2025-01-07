@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import useAuth from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import UserDashboard from '@/components/dashboard/UserDashboard';
 import EventsCalendar from '@/components/dashboard/events/EventsCalendar';

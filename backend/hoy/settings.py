@@ -22,6 +22,7 @@ ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=lamb
 
 # Application definition
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -30,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     
     # Third party apps
+    'channels',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
@@ -43,6 +45,8 @@ INSTALLED_APPS = [
     'feedback',
     'events',
     'gallery',
+    'recommendations',  
+    'dj_schedules',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +56,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'authentication.middleware.JWTAuthenticationMiddleware',  
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -75,6 +80,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'hoy.wsgi.application'
+
+# Channels configuration
+ASGI_APPLICATION = 'hoy.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [(os.getenv('REDIS_HOST', 'redis'), 6379)],
+        },
+    },
+}
 
 # Database
 DATABASES = {
@@ -159,7 +175,7 @@ REST_FRAMEWORK = {
 
 # JWT settings
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
@@ -172,6 +188,11 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'TOKEN_TYPE_CLAIM': 'token_type',
+    'JTI_CLAIM': 'jti',
+    'TOKEN_USER_CLASS': 'users.User',
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=15),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=7),
 }
 
 # CORS settings
@@ -289,3 +310,10 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.apple.AppleIdAuth',
 )
+
+# AI Settings
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+TENSORFLOW_MODEL_PATH = os.path.join(BASE_DIR, 'recommendations/models')
+
+# Ensure model directory exists
+os.makedirs(TENSORFLOW_MODEL_PATH, exist_ok=True)

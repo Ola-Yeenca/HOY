@@ -2,24 +2,82 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 10, 10, 10;
-  --background-end-rgb: 0, 0, 0;
-  --gold-rgb: 255, 215, 0;
-  --coffee-bean-rgb: 58, 37, 24;
-}
-
 @layer base {
-  html {
-    @apply scroll-smooth;
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 51 100% 50%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 25 43% 34%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 51 100% 50%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 51 100% 50%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 25 43% 34%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 51 100% 50%;
+  }
+
+  * {
+    @apply border-[hsl(var(--border))];
   }
   body {
-    @apply bg-gray-950 text-white;
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
+  .bento-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4;
+  }
+
+  .bento-card {
+    @apply bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl;
+  }
+
+  .bento-card-large {
+    @apply md:col-span-2 md:row-span-2;
+  }
+
+  .bento-card-header {
+    @apply p-6 flex flex-col gap-2;
+  }
+
+  .bento-card-content {
+    @apply p-6;
+  }
+
+  .bento-card-footer {
+    @apply p-6 border-t border-[hsl(var(--border))] flex items-center justify-between;
   }
 }
 
@@ -109,7 +167,7 @@
 
   /* Form Elements */
   .form-input {
-    @apply bg-coffee-bean border border-dark-gray rounded-lg px-4 py-2 text-white-plum focus:outline-none focus:border-gold transition-colors;
+    @apply bg-coffee-bean border border-[hsl(var(--border))] rounded-lg px-4 py-2 text-white-plum focus:outline-none focus:border-gold transition-colors;
   }
 
   /* Animations */
@@ -201,7 +259,7 @@
   }
 
   .event-card-footer {
-    @apply flex items-center justify-between pt-4 border-t border-zinc-700/30;
+    @apply flex items-center justify-between pt-4 border-t border-[hsl(var(--border))];
   }
 
   /* Loading Shimmer Effect */
@@ -274,7 +332,7 @@
   }
 
   .feedback-input {
-    @apply w-full bg-black/30 border border-white-plum/20 rounded-lg px-4 py-2 text-white-plum focus:outline-none focus:border-gold transition-colors;
+    @apply w-full bg-black/30 border border-[hsl(var(--border))] rounded-lg px-4 py-2 text-white-plum focus:outline-none focus:border-gold transition-colors;
   }
 
   .card-gradient {

@@ -9,7 +9,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import axios from '@/services/api';
 import { FEATURED_EVENTS } from '@/data/events';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 import { FaCalendarAlt, FaCrown, FaFire } from 'react-icons/fa';
 import Link from 'next/link';
 import { Event } from '@/types/events';

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn } from '@/utils';
 
 interface BentoGridProps {
   children: React.ReactNode;

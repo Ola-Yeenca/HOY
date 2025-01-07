@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import useAuth from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
 import { FaEnvelope, FaLock } from 'react-icons/fa';
 

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import useAuth from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { motion } from 'framer-motion';
 import { FaEnvelope, FaLock, FaUser, FaGoogle, FaApple, FaSpinner } from 'react-icons/fa';
 

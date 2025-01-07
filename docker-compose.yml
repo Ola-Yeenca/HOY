@@ -26,8 +26,12 @@ services:
       - EMAIL_HOST_USER=${EMAIL_HOST_USER}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
       - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - REDIS_HOST=redis
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     restart: unless-stopped
     networks:
@@ -49,6 +53,7 @@ services:
       - NODE_ENV=development
       - NEXT_TELEMETRY_DISABLED=1
       - WATCHPACK_POLLING=true
+      - NEXT_PUBLIC_OPENAI_API_KEY=${OPENAI_API_KEY}
     depends_on:
       backend:
         condition: service_healthy
@@ -80,6 +85,18 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - hoy_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 networks:
   hoy_network:

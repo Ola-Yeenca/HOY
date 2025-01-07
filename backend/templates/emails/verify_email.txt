@@ -1,0 +1,13 @@
+Welcome to House of Young!
+
+Hi {{ user.first_name }},
+
+Thank you for signing up. Please verify your email address by clicking the link below:
+
+{{ verification_url }}
+
+This verification link will expire in 24 hours.
+
+If you didn't create an account with House of Young, please ignore this email.
+
+© {% now "Y" %} House of Young. All rights reserved.

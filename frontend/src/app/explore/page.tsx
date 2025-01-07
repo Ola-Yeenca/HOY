@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiSearch, FiMap, FiGrid, FiMapPin } from 'react-icons/fi';
 import { SearchBar } from '@/components/explore/SearchBar';
@@ -8,74 +8,31 @@ import { CategoryFilter } from '@/components/explore/CategoryFilter';
 import { ExploreGrid } from '@/components/explore/ExploreGrid';
 import { MapView } from '@/components/explore/MapView';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
+import { ExploreFiltersComponent } from '@/components/explore/ExploreFilters';
 import useGeolocation from '@/hooks/useGeolocation';
-import eventService from '@/services/eventService';
-import { Event } from '@/types/events';
-import { toast } from 'react-hot-toast';
+import { useExplore } from '@/hooks/useExplore';
+import { useCategories } from '@/contexts/AppContext';
 
 export default function ExplorePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
-  const [isLoading, setIsLoading] = useState(true);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [categories, setCategories] = useState<{ name: string; count: number }[]>([]);
   const { location, error: locationError } = useGeolocation();
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-
-  const fetchEvents = async (newSearch = false) => {
-    if (!location) return;
-    
-    try {
-      setIsLoading(true);
-      const currentPage = newSearch ? 1 : page;
-      const { events: newEvents, total } = await eventService.fetchNearbyEvents({
-        latitude: location.latitude,
-        longitude: location.longitude,
-        category: selectedCategory,
-        searchQuery,
-        page: currentPage,
-        limit: 20
-      });
-
-      if (newSearch) {
-        setEvents(newEvents);
-        setPage(1);
-      } else {
-        setEvents(prev => [...prev, ...newEvents]);
-      }
-      
-      setHasMore(events.length < total);
-    } catch (error) {
-      toast.error('Failed to fetch events. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const popularCategories = await eventService.getPopularCategories();
-      setCategories(popularCategories);
-    } catch (error) {
-      console.error('Failed to fetch categories:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (location) {
-      fetchEvents(true);
-      fetchCategories();
-    }
-  }, [location, selectedCategory, searchQuery]);
-
-  const handleLoadMore = () => {
-    if (!isLoading && hasMore) {
-      setPage(prev => prev + 1);
-      fetchEvents();
-    }
-  };
+  const { categories } = useCategories();
+  
+  const { 
+    items, 
+    isLoading, 
+    error, 
+    filters, 
+    hasMore,
+    updateFilters,
+    loadMore 
+  } = useExplore({
+    category: selectedCategory !== 'all' ? selectedCategory : undefined,
+    location: location ? `${location.latitude},${location.longitude}` : undefined,
+    searchQuery
+  });
 
   if (!location && !locationError) {
     return (
@@ -135,7 +92,10 @@ export default function ExplorePage() {
           >
             <SearchBar 
               value={searchQuery}
-              onChange={setSearchQuery}
+              onChange={(value) => {
+                setSearchQuery(value);
+                updateFilters({ searchQuery: value });
+              }}
               placeholder="Search for events..."
             />
           </motion.div>
@@ -146,9 +106,20 @@ export default function ExplorePage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <CategoryFilter 
-            categories={[{ name: 'all', count: 0 }, ...categories]}
+            categories={[
+              { name: 'all', count: items.length },
+              ...categories.map(cat => ({
+                name: cat,
+                count: items.filter(item => item.category === cat).length
+              }))
+            ]}
             selected={selectedCategory}
-            onChange={setSelectedCategory}
+            onChange={(category) => {
+              setSelectedCategory(category);
+              updateFilters({ 
+                category: category !== 'all' ? category : undefined 
+              });
+            }}
           />
           
           <div className="flex items-center gap-2 bg-black/40 p-2 rounded-lg">
@@ -167,19 +138,59 @@ export default function ExplorePage() {
           </div>
         </div>
 
+        <ExploreFiltersComponent
+          filters={filters}
+          onFilterChange={updateFilters}
+        />
+
         {viewMode === 'grid' ? (
-          <ExploreGrid 
-            events={events}
-            isLoading={isLoading}
-            hasMore={hasMore}
-            onLoadMore={handleLoadMore}
-          />
+          <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-3">
+            {isLoading && items.length === 0 ? (
+              <div className="col-span-full flex items-center justify-center min-h-[400px]">
+                <LoadingSpinner size="large" />
+              </div>
+            ) : error ? (
+              <div className="col-span-full flex items-center justify-center min-h-[400px] text-red-500">
+                {error}
+              </div>
+            ) : items.length === 0 ? (
+              <div className="col-span-full flex items-center justify-center min-h-[400px] text-gray-300">
+                No items found matching your criteria
+              </div>
+            ) : (
+              <>
+                {items.map((item) => (
+                  <motion.div
+                    key={`${item.type}-${item.id}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ExploreGrid events={[item]} />
+                  </motion.div>
+                ))}
+                {isLoading && (
+                  <div className="col-span-full flex items-center justify-center py-8">
+                    <LoadingSpinner size="medium" />
+                  </div>
+                )}
+                {hasMore && !isLoading && (
+                  <button
+                    onClick={loadMore}
+                    className="col-span-full mx-auto mt-8 px-6 py-2 bg-gold text-black rounded-lg hover:bg-gold/90 transition-colors"
+                  >
+                    Load More
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         ) : (
           <MapView 
             searchQuery={searchQuery}
             category={selectedCategory}
             userLocation={location}
-            events={events}
+            events={items}
           />
         )}
       </div>

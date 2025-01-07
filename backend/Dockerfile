@@ -42,5 +42,5 @@ ENV PORT=8000
 
 EXPOSE 8000
 
-# Run migrations and start server with gunicorn
-CMD ["sh", "-c", "python3 manage.py makemigrations && python3 manage.py migrate && gunicorn hoy.wsgi:application --bind 0.0.0.0:8000 --workers 4 --threads 4 --timeout 120 --access-logfile - --error-logfile - --log-level debug"]
+# Use daphne as the ASGI server
+CMD ["sh", "-c", "python3 manage.py makemigrations && python3 manage.py migrate && daphne -b 0.0.0.0 -p 8000 hoy.asgi:application"]

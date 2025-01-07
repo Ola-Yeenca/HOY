@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform, MotionValue } from 'framer-motion';
-import useAuth from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { FaSpinner, FaLock, FaBell, FaUserShield, FaToggleOn, FaToggleOff, FaCheck, FaImage, FaTrash } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';

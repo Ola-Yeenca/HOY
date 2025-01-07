@@ -15,7 +15,7 @@ interface AuthState {
   isLoading: boolean;
 }
 
-export default function useAuth() {
+export function useAuth() {
   const router = useRouter();
   const [authState, setAuthState] = useState<AuthState>({
     user: null,

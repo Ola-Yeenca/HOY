@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="80" height="40" viewBox="0 0 80 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="80" height="40" rx="4" fill="transparent"/>
+  
+  <!-- HOY Text -->
+  <text x="40" y="26" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#FFD700" text-anchor="middle">
+    HOY
+  </text>
+  
+  <!-- Decorative Line -->
+  <path d="M15 32 L65 32" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+</svg>

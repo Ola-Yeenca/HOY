@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
-import useAuth from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 
 const publicQuickLinks = [
   { href: '/', label: 'Home' },

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import useAuth from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
 import authService from '@/services/authService';
 import { usePathname } from 'next/navigation';
 import { Loader } from '@/components/ui/loader';
